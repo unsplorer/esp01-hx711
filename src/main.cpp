@@ -26,7 +26,8 @@ LiquidCrystal_I2C
 
 #ifdef FILAMENT_SCALE
 #include <HX711.h>
-#define EMPTY_SPOOL_WEIGHT 235
+#define EMPTY_SPOOL_WEIGHT 241
+#define ROLLER_WEIGHT     46
 #define LOADCELL_DOUT_PIN TX_PIN
 #define LOADCELL_SCK_PIN RX_PIN
 HX711 scale; // create hx711 object
@@ -127,7 +128,7 @@ void showWeight() {
   long filament_remaining = 0; // hx711 returns long
 
   if (scale.is_ready()) {
-    filament_remaining = (scale.get_units(2)) - EMPTY_SPOOL_WEIGHT;
+    filament_remaining = ((scale.get_units(2)) - EMPTY_SPOOL_WEIGHT) - ROLLER_WEIGHT;
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Filament Weight");
