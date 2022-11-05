@@ -225,7 +225,7 @@ void handle_home_page() {
   char body[1024];
   sprintf(body,
           "<html> <head>   <title>ESP8266 Page</title> <meta name='viewport' "
-          "content='width=device-width, initial-scale=1.0'>  <style>     h1 "
+          "content='width=device-width, initial-scale=1.0'>  <style>     .btn {background: #2B2D2F;height: 80px;width: 200px;text-align: center;position: absolute;top: 50%;transform: translateY(-50%);left: 0;right: 0;margin: 0 auto;cursor: pointer;border-radius: 4px;}    h1 "
           "{text-align:center; }     td {font-size: 50%; padding-top: 30px;}   "
           "  .temp {font-size:150%; color: #FF0000;}     .press "
           "{font-size:150%; color: #00FF00;}     .hum {font-size:150%; color: "
@@ -233,7 +233,7 @@ void handle_home_page() {
           "Page</h1>    <div id='div1'>        <table>           <tr>          "
           "  <td>Offset</td><td class='temp'>%ld</td>          </tr>     "
           "     <tr>   <td>Weight</td><td class='press'>%f</td>   </tr>  "
-          "<tr>   </tr> </div> "
+          "<tr>   </tr><button class='btn'><a href='/calibrate'>Calibrate Scale</a><button> </div> "
           "</body>  </html>",
           scale.get_offset(),weight);
   server.send(200, "text/html", body);
