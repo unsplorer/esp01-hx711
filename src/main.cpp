@@ -178,7 +178,7 @@ Task(unsigned long lastRun, unsigned int interval, void (func)()){
     server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request){
         StaticJsonDocument<64> doc;
         doc["offset"] = scale.get_offset();
-        doc["reading"] = scale.get_units(2);
+        doc["reading"] = scale.get_units(2) - EMPTY_SPOOL_WEIGHT - ROLLER_WEIGHT;
         String json;
         serializeJson(doc,json);
         request->send(200, "application/json", json);
