@@ -101,13 +101,12 @@ function getReadings(){
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      const OFFSET = 286 // empty spool and roller weight
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
       // var temp = myObj.offset;
       var hum = myObj.reading;
       // gaugeTemp.value = temp;
-      gaugeHum.value = hum - OFFSET;
+      gaugeHum.value = hum;
     }
   }; 
   xhr.open("GET", "/readings", true);
@@ -132,11 +131,9 @@ if (!!window.EventSource) {
   }, false);
   
   source.addEventListener('new_readings', function(e) {
-    const OFFSET = 286 // empty spool and roller weight
     console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
-    // gaugeTemp.value = myObj.offset;
-    gaugeHum.value = myObj.reading - OFFSET;
+    gaugeHum.value = myObj.reading;
   }, false);
 }
