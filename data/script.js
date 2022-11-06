@@ -475,13 +475,13 @@ var gaugeHum = new RadialGauge({
   borders: false,
   needleType: "arrow",
   colorNeedle: "#000",
-  colorNeedleEnd: "#0009",
-  needleWidth: 4,
+  colorNeedleEnd: "#00f9",
+  needleWidth: 6,
   needleCircleSize: 3,
   colorNeedleCircleOuter: "#000",
   needleCircleOuter: true,
   needleCircleInner: true,
-  animationDuration: 1500,
+  animationDuration: 1000,
   animationRule: "linear"
 }).draw();
 
