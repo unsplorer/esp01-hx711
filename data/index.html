@@ -1,68 +1,25 @@
+<!DOCTYPE html>
 <html>
-
-<head>
-  <title>ESP8266 Page</title>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <style>
-    h1 {
-      text-align: center;
-    }
-
-    td {
-      font-size: 50%;
-      padding-top: 30px;
-    }
-
-    .temp {
-      font-size: 150%;
-      color: #FF0000;
-    }
-
-    .press {
-      font-size: 150%;
-      color: #00FF00;
-    }
-
-    .hum {
-      font-size: 150%;
-      color:
-        #0000FF;
-    }
-
-    .btn {
-      background: #2B2D2F;
-      height: 80px;
-      width: 200px;
-      text-align: center;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 0;
-      right: 0;
-      margin: 0 auto;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>ESP8266 Sensor
-    "Page</h1>
-  <div id='div1'>
-    <table>
-      <tr> "
-        " <td>Offset</td>
-        <td class='temp'>%ld</td>
-      </tr> "
-      " <tr>
-        <td>Weight</td>
-        <td class='press'>%f</td>
-      </tr> "
-      "<tr> </tr>
-      <button class='btn'><a href="/calibrate">Calibrate Scale</a><button>
-  </div> "
-  "
-</body>
-
-</html>"
+  <head>
+    <title>Filament Scale Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="http://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
+  </head>
+  <body>
+    <div class="topnav">
+      <h1>Filament Center</h1>
+    </div>
+    <div class="content">
+      <div class="card-grid">
+        <div class="card">
+          <p class="card-title">Ender 3 Filament Remaining</p>
+          <canvas id="gauge-humidity"></canvas>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
