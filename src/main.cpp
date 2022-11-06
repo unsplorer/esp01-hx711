@@ -1,4 +1,4 @@
-// #include "secrets.h"
+#include "secrets.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
@@ -8,8 +8,6 @@
 #include <LittleFS.h>
 #include <Wire.h>
 
-#define SSID "RodHodder"
-#define PASS "!q2w3e4ribanezS450mitantway85"
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
 #define SERVER
 #define SDA 0x00
@@ -35,7 +33,6 @@ class Task {
 private:
   unsigned long lastRun;
   unsigned int interval;
-  // std::function<void()> actualTask_;
   void (*_actualTask_)();
 
 public:
@@ -44,11 +41,6 @@ public:
     this->interval = interval;
     this->_actualTask_ = func;
   }
-  // Task(unsigned long lastRun, unsigned int interval,const
-  // std::function<void()> &functionToRun): actualTask_(functionToRun) {
-  //   this->lastRun = lastRun;
-  //   this->interval = interval;
-  // };
   void run() {
     this->lastRun = millis();
     this->_actualTask_();
@@ -72,8 +64,9 @@ typedef struct scaleData {
   float calibration= 0;
   float offset = 0;
   float filament_remaining = 0;
-};
-scaleData scale_data;
+  bool calFlag = false;
+} scaleData_t;
+scaleData_t scale_data;
 
 void updateScale() {
   if (scale.is_ready()) {
@@ -139,6 +132,7 @@ void calibrateScale() {
   lcd.setCursor(0, 1);
   lcd.print("Saved");
   countdown(2000);
+  scale_data.calFlag = false;
 }
 
 void loadConfig() {
@@ -209,7 +203,7 @@ void startServer() {
     scale.tare();
   });
   server.on("/calibrate", HTTP_GET, [](AsyncWebServerRequest *request) {
-    calibrateScale();
+    scale_data.calFlag = true;
   });
   server.begin();
 }
@@ -262,7 +256,7 @@ void setup() {
   lcd.backlight();
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     lcd.clear();
     lcd.print("WiFi Failed");
@@ -291,6 +285,9 @@ void loop() {
 #endif
 
 #ifdef FILAMENT_SCALE
+  if (scale_data.calFlag){
+    calibrateScale();
+  }
   if (getScaleData.isReady()) {
     getScaleData.run();
   }
