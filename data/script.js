@@ -56,12 +56,12 @@ var gaugeHum = new RadialGauge({
   renderTo: 'gauge-humidity',
   width: 300,
   height: 300,
-  units: "Grams",
+  units: "grams",
   minValue: 0,
   maxValue: 1000,
-  colorValueBoxRect: "#049faa",
-  colorValueBoxRectEnd: "#049faa",
-  colorValueBoxBackground: "#f1fbfc",
+  colorValueBoxRect: "#ffffff",
+  colorValueBoxRectEnd: "#ffffff",
+  colorValueBoxBackground: "#ffffff",
   valueInt: 2,
   majorTicks: [
       "0",
@@ -84,14 +84,14 @@ var gaugeHum = new RadialGauge({
   colorPlate: "#fff",
   borderShadowWidth: 0,
   borders: false,
-  needleType: "line",
-  colorNeedle: "#007F80",
-  colorNeedleEnd: "#007F80",
-  needleWidth: 2,
+  needleType: "arrow",
+  colorNeedle: "#000",
+  colorNeedleEnd: "#0009",
+  needleWidth: 4,
   needleCircleSize: 3,
-  colorNeedleCircleOuter: "#007F80",
+  colorNeedleCircleOuter: "#000",
   needleCircleOuter: true,
-  needleCircleInner: false,
+  needleCircleInner: true,
   animationDuration: 1500,
   animationRule: "linear"
 }).draw();
@@ -101,13 +101,13 @@ function getReadings(){
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      let offset = 286 // empty spool and roller weight
+      const OFFSET = 286 // empty spool and roller weight
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
       // var temp = myObj.offset;
       var hum = myObj.reading;
       // gaugeTemp.value = temp;
-      gaugeHum.value = hum - offset;
+      gaugeHum.value = hum - OFFSET;
     }
   }; 
   xhr.open("GET", "/readings", true);
@@ -132,11 +132,11 @@ if (!!window.EventSource) {
   }, false);
   
   source.addEventListener('new_readings', function(e) {
-    let offset = 286 // empty spool and roller weight
+    const OFFSET = 286 // empty spool and roller weight
     console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
     // gaugeTemp.value = myObj.offset;
-    gaugeHum.value = myObj.reading - offset;
+    gaugeHum.value = myObj.reading - OFFSET;
   }, false);
 }
