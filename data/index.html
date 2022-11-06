@@ -6,6 +6,9 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" type="text/css" href="toastify.css">
+    <link rel="stylesheet" type="text/css" href="script.css">
     <script src="http://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
   </head>
   <body>
@@ -16,12 +19,13 @@
         Filament Dashboard
       </h1>
     </div>
-    
+    <!-- <a href="#" id="new-toast" class="button">Try</a> -->
     <div id="mySidenav" class="sidenav">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-      <a href="/calibrate">Calibrate</a>
-      <a href="/tare">Tare</a>
-
+      
+      <button href="/calibrate" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-calibrate" onclick="closeNav()">Calibrate</button>
+      <button href="/tare" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-tare" onclick="closeNav()">Tare</button>
+      
     </div>
     
     <!-- Use any element to open the sidenav -->
@@ -34,7 +38,7 @@
         </div>
       </div>
     </div>
-    <script src="script.js"></script>
+    <script src="script.min.js"></script>
     <script>
       function openNav() {
         document.getElementById("mySidenav").style.width = "250px";

@@ -207,11 +207,9 @@ void startServer() {
   server.addHandler(&events);
   server.on("/tare", HTTP_GET, [](AsyncWebServerRequest *request) {
     scale.tare();
-    request->send(200, "text/text", "scale tared");
   });
   server.on("/calibrate", HTTP_GET, [](AsyncWebServerRequest *request) {
     calibrateScale();
-    request->send(200, "text/text", "starting calibrate");
   });
   server.begin();
 }
