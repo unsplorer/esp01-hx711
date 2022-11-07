@@ -65,6 +65,7 @@ typedef struct scaleData {
   float offset = 0;
   float filament_remaining = 0;
   bool calFlag = false;
+  int knownWeight = 0;
 } scaleData_t;
 scaleData_t scale_data;
 
@@ -101,6 +102,16 @@ void countdown(int millis) {
 }
 
 void calibrateScale() {
+  if (scale_data.knownWeight == 0){
+    lcd.clear();
+    lcd.print("Cal Failed");
+    lcd.setCursor(0, 1);
+    lcd.print("Weight UnKnown");
+    scale_data.calFlag = false;
+    delay(4000);
+    // ESP.reset();
+    return;
+  }
   lcd.clear();
   lcd.print("Calbrating");
   lcd.setCursor(0, 1);
@@ -109,23 +120,17 @@ void calibrateScale() {
   scale.set_scale();
   scale.tare();
   lcd.clear();
-  lcd.print("Place 100g");
+  lcd.printf("Place %dg",scale_data.knownWeight);
   lcd.setCursor(0, 1);
   lcd.print("On Scale");
-  countdown(10000);
-  float raw_weight = scale.get_units(2);
-  lcd.clear();
-  lcd.print("raw weight");
-  lcd.setCursor(0, 1);
-  lcd.printf("%f", raw_weight);
-  countdown(2000);
-  float cal_weight = raw_weight / 100;
+  countdown(5000);
+  scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
   lcd.clear();
   lcd.print("cal weight");
   lcd.setCursor(0, 1);
-  lcd.printf("%f", cal_weight);
+  lcd.printf("%f", scale_data.calibration);
   countdown(2000);
-  scale.set_scale(cal_weight);
+  scale.set_scale(scale_data.calibration);
   saveConfig();
   lcd.clear();
   lcd.print("Calibration");
@@ -133,35 +138,36 @@ void calibrateScale() {
   lcd.print("Saved");
   countdown(2000);
   scale_data.calFlag = false;
+  // ESP.reset();
 }
 
 void loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
   if (!configFile) {
     lcd.clear();
-    lcd.print("Failed to");
+    lcd.print("Failed to Load");
     lcd.setCursor(0, 1);
-    lcd.print("Open Config");
+    lcd.print("Calibration");
     delay(4000);
-    calibrateScale();
     return;
   }
   StaticJsonDocument<64> doc;
   deserializeJson(doc, configFile);
-  float calValue = doc["calibration"];
-  float offset = doc["offset"];
-  if (offset) {
-    scale.set_offset(offset);
+  scale_data.calibration = doc["calibration"];
+  scale_data.offset= doc["offset"];
+  if (scale_data.offset) {
+    scale.set_offset(scale_data.offset);
   }
-  scale.set_scale(calValue);
-  delay(4000);
-  lcd.clear();
-  lcd.printf("calvalue%f", calValue);
-
+  if (scale_data.calibration){
+    scale.set_scale(scale_data.calibration);
+  }
   lcd.clear();
   lcd.print("Loaded");
   lcd.setCursor(0, 1);
   lcd.print("Calibration");
+  lcd.clear();
+  lcd.printf("calvalue%.2f", scale_data.calibration);
+  countdown(4000);
   configFile.close();
 }
 
@@ -188,6 +194,7 @@ void startServer() {
   server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request) {
     StaticJsonDocument<64> doc;
     doc["reading"] = scale_data.filament_remaining;
+    doc["offset"] = scale_data.offset;
     String json;
     serializeJson(doc, json);
     request->send(200, "application/json", json);
@@ -200,10 +207,23 @@ void startServer() {
   });
   server.addHandler(&events);
   server.on("/tare", HTTP_GET, [](AsyncWebServerRequest *request) {
-    scale.tare();
+    scale.tare(2);
   });
   server.on("/calibrate", HTTP_GET, [](AsyncWebServerRequest *request) {
     scale_data.calFlag = true;
+    String message;
+    if (request->hasParam("known_weight", false)){
+      message = request->getParam("known_weight")->value();
+    }
+    scale_data.knownWeight = atoi(message.c_str());
+  });
+  server.on("/offset", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String message;
+    if (request->hasParam("offset", false)){
+      message = request->getParam("offset")->value();
+    }
+    scale_data.offset = atoi(message.c_str());
+    scale.set_offset(scale_data.offset);
   });
   server.begin();
 }
@@ -286,7 +306,9 @@ void loop() {
 
 #ifdef FILAMENT_SCALE
   if (scale_data.calFlag){
+    server.end();
     calibrateScale();
+    startServer();
   }
   if (getScaleData.isReady()) {
     getScaleData.run();
