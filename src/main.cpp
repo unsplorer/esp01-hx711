@@ -137,8 +137,12 @@ void calibrateScale() {
   lcd.setCursor(0, 1);
   lcd.print("Saved");
   countdown(2000);
+  lcd.clear();
+  lcd.print("Resetting");
+  lcd.setCursor(0, 1);
+  lcd.print("Device");
   scale_data.calFlag = false;
-  // ESP.reset();
+  ESP.reset();
 }
 
 void loadConfig() {
