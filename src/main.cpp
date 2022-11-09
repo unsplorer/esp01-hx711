@@ -1,15 +1,15 @@
-#include "secrets.h"
-#include <Arduino.h>
+#include "LittleFS.h"
+#include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <LiquidCrystal_I2C.h>
-#include <LittleFS.h>
+
 #include <Wire.h>
 
-#define FILAMENT_SCALE // enable FILAMENT_SCALE component
-#define SERVER
+// #define FILAMENT_SCALE // enable FILAMENT_SCALE component
+// #define SERVER
 #define SDA 0x00
 #define SCL 0x02
 #define RX_PIN 0x03
@@ -273,6 +273,7 @@ void startOTA() {
 }
 
 void setup() {
+  int retry = 0, config_done = 0;
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
   lcd.init();
@@ -280,11 +281,35 @@ void setup() {
   lcd.backlight();
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    lcd.clear();
-    lcd.print("WiFi Failed");
+  // check whether WiFi connection can be established
+  lcd.clear();
+  lcd.print("Connecting...");
+  while (WiFi.status() != WL_CONNECTED){
+    delay(500);
+    if (retry++ >= 20){
+      lcd.clear();
+      lcd.print("Connection timeout");
+      lcd.setCursor(0,1);
+      lcd.print("RunSmartConfig");
+      WiFi.beginSmartConfig();
+      // forever loop: exit only when SmartConfig packets have been received
+      while (true){
+        delay(500);
+        lcd.clear();
+        lcd.print("RunSmartConfig")
+        if (WiFi.smartConfigDone()){
+          lcd.clear();
+          lcd.print("Config Success");
+          config_done = 1;
+          break; // exit from loop
+        }
+      }
+      if (config_done == 1){
+        break;
+      }
+    }
   }
+
   lcd.print(WiFi.localIP());
 
   startOTA();
