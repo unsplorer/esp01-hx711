@@ -296,7 +296,7 @@ void setup() {
       while (true){
         delay(500);
         lcd.clear();
-        lcd.print("RunSmartConfig")
+        lcd.print("RunSmartConfig");
         if (WiFi.smartConfigDone()){
           lcd.clear();
           lcd.print("Config Success");
