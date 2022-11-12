@@ -4,9 +4,10 @@
 #include <ArduinoOTA.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <LiquidCrystal_I2C.h>
-
 #include <Wire.h>
+
+#define SSD1306
+// #define LCD1602
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
 #define SERVER
 // ESP01 build pinouts
@@ -36,8 +37,18 @@ void startServer();
 void setup();
 void updateWeb();
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
+#ifdef LCD1602
+  #include <LiquidCrystal_I2C.h>
+  LiquidCrystal_I2C lcd(0x27, 16, 2);
+#endif
+#ifdef SSD1306
+  #include <Adafruit_SSD1306.h>
+  #define SCREEN_WIDTH    128
+  #define SCREEN_HEIGHT   64
+  #define OLED_RESET      -1
+  #define SCREEN_ADDRESS  0x3D
+  Adafruit_SSD1306 lcd(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire, OLED_RESET);
+#endif
 class Task {
 private:
   unsigned long lastRun;
@@ -99,52 +110,49 @@ public:
 
   void countdown(int millis) {
     while (millis) {
-      lcd.setCursor(15, 1);
-      lcd.rightToLeft();
+      lcd.setCursor(116, 63);
       lcd.print(millis / 1000);
       delay(1000);
       millis = millis - 1000;
     }
-    lcd.leftToRight();
   }
 
   void calibrateScale() {
     if (scale_data.knownWeight == 0){
-      lcd.clear();
-      lcd.print("Cal Failed");
-      lcd.setCursor(0, 1);
-      lcd.print("Weight UnKnown");
+      lcd.clearDisplay();
+      lcd.println("Cal Failed");
+      lcd.println("Weight UnKnown");
       scale_data.calFlag = false;
       delay(4000);
       // ESP.reset();
       return;
     }
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.print("Calbrating");
     lcd.setCursor(0, 1);
     lcd.print("Scale");
     countdown(2000);
     scale.set_scale();
     scale.tare();
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.printf("Place %dg",scale_data.knownWeight);
     lcd.setCursor(0, 1);
     lcd.print("On Scale");
     countdown(5000);
     scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.print("cal weight");
     lcd.setCursor(0, 1);
     lcd.printf("%f", scale_data.calibration);
     countdown(2000);
     scale.set_scale(scale_data.calibration);
     saveConfig();
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.print("Calibration");
     lcd.setCursor(0, 1);
     lcd.print("Saved");
     countdown(2000);
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.print("Resetting");
     lcd.setCursor(0, 1);
     lcd.print("Device");
@@ -155,7 +163,7 @@ public:
   void loadConfig() {
     File configFile = LittleFS.open("/config.json", "r");
     if (!configFile) {
-      lcd.clear();
+      lcd.clearDisplay();
       lcd.print("Failed to Load");
       lcd.setCursor(0, 1);
       lcd.print("Calibration");
@@ -172,21 +180,18 @@ public:
     if (scale_data.calibration){
       scale.set_scale(scale_data.calibration);
     }
-    lcd.clear();
-    lcd.print("Loaded");
-    lcd.setCursor(0, 1);
-    lcd.print("Calibration");
-    lcd.clear();
+    lcd.clearDisplay();
+    lcd.println("Loaded");
+    lcd.println("Calibration");
     lcd.printf("calvalue%.2f", scale_data.calibration);
     countdown(4000);
     configFile.close();
   }
 
   void showWeight() {
-    lcd.clear();
+    lcd.clearDisplay();
     lcd.setCursor(0, 0);
-    lcd.print("Filament Weight");
-    lcd.setCursor(0, 1);
+    lcd.println("Filament Weight");
     lcd.printf("%.2f grams", scale_data.filament_remaining);
   }
   #ifdef SERVER
@@ -250,62 +255,77 @@ public:
 #endif
 
 void startOTA() {
-  lcd.clear();
-  ArduinoOTA.onStart([]() { lcd.print("Start"); });
+  lcd.clearDisplay();
+  ArduinoOTA.onStart([]() { lcd.println("Start"); });
   ArduinoOTA.onEnd([]() {
-    lcd.clear();
-    lcd.print("Success");
+    lcd.clearDisplay();
+    lcd.println("Success");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    lcd.clear();
-    lcd.print("Updating");
+    lcd.clearDisplay();
+    lcd.println("Updating");
     lcd.setCursor(0,1);
     lcd.printf("Progress: %u%%", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {
     lcd.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR)
-      Serial.println("Auth Failed");
+      lcd.println("Auth Failed");
     else if (error == OTA_BEGIN_ERROR)
-      Serial.println("Begin Failed");
+      lcd.println("Begin Failed");
     else if (error == OTA_CONNECT_ERROR)
-      Serial.println("Connect Failed");
+      lcd.println("Connect Failed");
     else if (error == OTA_RECEIVE_ERROR)
-      Serial.println("Receive Failed");
+      lcd.println("Receive Failed");
     else if (error == OTA_END_ERROR)
-      Serial.println("End Failed");
+      lcd.println("End Failed");
   });
   ArduinoOTA.begin();
 }
+
+void initDisplay(){
+  if(lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)){
+    lcd.display();
+    delay(2000);;
+
+    // clearDisplay buffer
+    lcd.clearDisplay();
+    lcd.println("Testing!");
+
+    // Display test
+    lcd.invertDisplay(true);
+    delay(1000);
+    lcd.invertDisplay(false);
+    delay(1000);
+  }
+}
+
 
 void setup() {
   int retry = 0, config_done = 0;
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
-  lcd.init();
-  lcd.clear();
-  lcd.backlight();
+  initDisplay();
 
   WiFi.mode(WIFI_STA);
   // check whether WiFi connection can be established
-  lcd.clear();
+  lcd.clearDisplay();
   lcd.print("Connecting...");
   while (WiFi.status() != WL_CONNECTED){
     delay(500);
     if (retry++ >= 20){
-      lcd.clear();
-      lcd.print("Connection timeout");
-      lcd.setCursor(0,1);
-      lcd.print("RunSmartConfig");
+      lcd.clearDisplay();
+      lcd.println("Connection timeout");
+      lcd.println("RunSmartConfig");
       WiFi.beginSmartConfig();
       // forever loop: exit only when SmartConfig packets have been received
       while (true){
         delay(500);
-        lcd.clear();
-        lcd.print("RunSmartConfig");
+        lcd.clearDisplay();
+        lcd.println("RunSmartConfig");
         if (WiFi.smartConfigDone()){
-          lcd.clear();
-          lcd.print("Config Success");
+          lcd.clearDisplay();
+          lcd.println("Config Success");
           config_done = 1;
           break; // exit from loop
         }
@@ -316,7 +336,7 @@ void setup() {
     }
   }
 
-  lcd.print(WiFi.localIP());
+  lcd.println(WiFi.localIP());
 
   startOTA();
 
