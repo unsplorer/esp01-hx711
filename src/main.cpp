@@ -12,8 +12,8 @@
 // #define SERVER
 // ESP01 build pinouts
 #ifdef ESP01
-#define SDA 0x00
-#define SCL 0x02
+#define SDA 0x02
+#define SCL 0x00
 #define RX_PIN 0x03
 #define TX_PIN 0x01
 #define LOADCELL_DOUT_PIN TX_PIN
@@ -46,7 +46,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
-#define SCREEN_ADDRESS 0x3D
+#define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #endif
 class Task {
@@ -69,6 +69,11 @@ public:
     return ((millis() - this->lastRun) > this->interval) ? true : false;
   }
 };
+
+void resetDisplay() {
+  lcd.clearDisplay();
+  lcd.setCursor(0, 0);
+}
 
 #ifdef FILAMENT_SCALE
 #include <HX711.h>
@@ -120,7 +125,7 @@ void countdown(int millis) {
 
 void calibrateScale() {
   if (scale_data.knownWeight == 0) {
-    lcd.clearDisplay();
+    resetDisplay();
     lcd.println("Cal Failed");
     lcd.println("Weight UnKnown");
     lcd.display();
@@ -129,7 +134,7 @@ void calibrateScale() {
     // ESP.reset();
     return;
   }
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.print("Calbrating");
   lcd.setCursor(0, 1);
   lcd.print("Scale");
@@ -137,14 +142,14 @@ void calibrateScale() {
   countdown(2000);
   scale.set_scale();
   scale.tare();
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.printf("Place %dg", scale_data.knownWeight);
   lcd.setCursor(0, 1);
   lcd.print("On Scale");
   lcd.display();
   countdown(5000);
   scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.print("cal weight");
   lcd.setCursor(0, 1);
   lcd.printf("%f", scale_data.calibration);
@@ -152,13 +157,13 @@ void calibrateScale() {
   countdown(2000);
   scale.set_scale(scale_data.calibration);
   saveConfig();
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.print("Calibration");
   lcd.setCursor(0, 1);
   lcd.print("Saved");
   lcd.display();
   countdown(2000);
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.print("Resetting");
   lcd.setCursor(0, 1);
   lcd.print("Device");
@@ -169,7 +174,7 @@ void calibrateScale() {
 void loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
   if (!configFile) {
-    lcd.clearDisplay();
+    resetDisplay();
     lcd.print("Failed to Load");
     lcd.setCursor(0, 1);
     lcd.print("Calibration");
@@ -187,7 +192,7 @@ void loadConfig() {
   if (scale_data.calibration) {
     scale.set_scale(scale_data.calibration);
   }
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.println("Loaded");
   lcd.println("Calibration");
   lcd.printf("calvalue%.2f", scale_data.calibration);
@@ -197,7 +202,7 @@ void loadConfig() {
 }
 
 void showWeight() {
-  lcd.clearDisplay();
+  resetDisplay();
   lcd.setCursor(0, 0);
   lcd.println("Filament Weight");
   lcd.printf("%.2f grams", scale_data.filament_remaining);
@@ -263,18 +268,18 @@ void updateWeb() {
 #endif
 
 void startOTA() {
-  lcd.clearDisplay();
+  resetDisplay();
   ArduinoOTA.onStart([]() {
     lcd.println("Start");
     lcd.display();
   });
   ArduinoOTA.onEnd([]() {
-    lcd.clearDisplay();
+    resetDisplay();
     lcd.println("Success");
     lcd.display();
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    lcd.clearDisplay();
+    resetDisplay();
     lcd.println("Updating");
     lcd.setCursor(0, 1);
     lcd.printf("Progress: %u%%", (progress / (total / 100)));
@@ -299,12 +304,12 @@ void startOTA() {
 
 void initDisplay() {
   if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    lcd.display();
-    delay(2000);
-    ;
+    resetDisplay();
+    lcd.setTextSize(1);
+    lcd.setTextColor(SSD1306_WHITE);
+    lcd.cp437(true);
 
     // clearDisplay buffer
-    lcd.clearDisplay();
     lcd.println("Testing!");
     lcd.display();
 
@@ -319,32 +324,40 @@ void initDisplay() {
 }
 
 void setup() {
+  // Serial.begin(9600);
   int retry = 0, config_done = 0;
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
   initDisplay();
+  // Serial.println("Display init successfull");
 
   WiFi.mode(WIFI_STA);
   // check whether WiFi connection can be established
-  lcd.clearDisplay();
+  resetDisplay();
+
+  // Serial.println("connecting wifi");
+
   lcd.print("Connecting...");
   lcd.display();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if (retry++ >= 20) {
-      lcd.clearDisplay();
+      resetDisplay();
       lcd.println("Connection timeout");
       lcd.println("RunSmartConfig");
       lcd.display();
+      // Serial.println("Starting smartconfig");
       WiFi.beginSmartConfig();
       // forever loop: exit only when SmartConfig packets have been received
       while (true) {
         delay(500);
-        lcd.clearDisplay();
+        // Serial.println("smartconfig waiting for connection");
+        resetDisplay();
         lcd.println("RunSmartConfig");
         lcd.display();
         if (WiFi.smartConfigDone()) {
-          lcd.clearDisplay();
+          resetDisplay();
+          // Serial.println("Config Success");
           lcd.println("Config Success");
           lcd.display();
           config_done = 1;
