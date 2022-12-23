@@ -2,6 +2,36 @@
 window.addEventListener('load', getReadings);
 
 
+// Function to get current readings on the webpage when it loads for the first time
+function getReadings(){
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      let myObj = JSON.parse(this.responseText);
+      console.log(myObj);
+      let weight = myObj.reading;   
+      gaugeFilament.value = weight;
+    }
+  }; 
+  xhr.open("GET", "/readings", true);
+  xhr.send();
+}
+
+
+function startCalibration(){
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/calibrate?known_weight=100", true);
+  xhr.send();
+}
+
+
+let tareScale = () =>{
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/tare", true);
+  xhr.send();
+}
+
+
 // Create Humidity Gauge
 var gaugeFilament = new RadialGauge({
   renderTo: 'gauge-filament',
@@ -47,32 +77,7 @@ var gaugeFilament = new RadialGauge({
   animationRule: "linear"
 }).draw();
 
-// Function to get current readings on the webpage when it loads for the first time
-function getReadings(){
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      let myObj = JSON.parse(this.responseText);
-      console.log(myObj);
-      let weight = myObj.reading;   
-      gaugeFilament.value = weight;
-    }
-  }; 
-  xhr.open("GET", "/readings", true);
-  xhr.send();
-}
 
-function startCalibration(){
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/calibrate?known_weight=100", true);
-  xhr.send();
-}
-
-let tareScale = () =>{
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/tare", true);
-  xhr.send();
-}
 
 // event listener
 if (!!window.EventSource) {

@@ -162,8 +162,8 @@ void calibrateScale() {
   scale.set_scale(scale_data.calibration);
   saveConfig();
   resetDisplay();
-  lcd.println("Calibration");
-  lcd.println("Saved");
+  lcd.println("Config");
+  lcd.println("saved");
   lcd.display();
   countdown(2000);
   resetDisplay();
@@ -179,7 +179,7 @@ void loadConfig() {
     resetDisplay();
     lcd.println("Failed");
     lcd.println("to load");
-    lcd.println("Calibration");
+    lcd.println("config");
     lcd.display();
     delay(4000);
     return;
@@ -196,8 +196,7 @@ void loadConfig() {
   }
   resetDisplay();
   lcd.println("Loaded");
-  lcd.println("Calibration");
-  lcd.printf("calvalue%.2f\n", scale_data.calibration);
+  lcd.println("config");
   lcd.display();
   countdown(4000);
   configFile.close();
