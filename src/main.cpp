@@ -120,14 +120,26 @@ void saveConfig() {
   configFile.close();
 }
 
-void countdown(int millis) {
-  while (millis) {
-    lcd.setCursor(96, 48);
-    lcd.print(millis / 1000);
+void countDown(int millis) {
+  int secondsLeft = millis / 1000;
+  while (secondsLeft) {
+    if (secondsLeft < 10) {
+      lcd.setCursor(96, 48);
+      lcd.print("  ");
+      lcd.display();
+      lcd.setCursor(108, 48);
+    } else {
+      lcd.setCursor(96, 48);
+    }
+    lcd.print(secondsLeft);
+
     lcd.display();
     delay(1000);
-    millis = millis - 1000;
+    secondsLeft--;
   }
+  lcd.setCursor(96, 48);
+  lcd.print("  ");
+  lcd.display();
 }
 
 void calibrateScale() {
@@ -144,7 +156,7 @@ void calibrateScale() {
   resetDisplay();
   lcd.print("Calibrating");
   lcd.display();
-  countdown(2000);
+  countDown(2000);
   scale.set_scale();
   scale.tare();
   resetDisplay();
@@ -152,20 +164,20 @@ void calibrateScale() {
   lcd.setCursor(0, 64);
   lcd.print("On Scale");
   lcd.display();
-  countdown(5000);
+  countDown(5000);
   scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
   resetDisplay();
   lcd.println("cal weight");
   lcd.printf("%f\n", scale_data.calibration);
   lcd.display();
-  countdown(2000);
+  countDown(2000);
   scale.set_scale(scale_data.calibration);
   saveConfig();
   resetDisplay();
   lcd.println("Config");
   lcd.println("saved");
   lcd.display();
-  countdown(2000);
+  countDown(2000);
   resetDisplay();
   lcd.println("Resetting");
   lcd.println("Device");
@@ -198,7 +210,7 @@ void loadConfig() {
   lcd.println("Loaded");
   lcd.println("config");
   lcd.display();
-  countdown(4000);
+  countDown(4000);
   configFile.close();
 }
 
