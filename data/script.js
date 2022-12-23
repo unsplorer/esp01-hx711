@@ -502,6 +502,12 @@ function getReadings(){
   xhr.send();
 }
 
+function startCalibration(){
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/calibrate?known_weight=100", true);
+  xhr.send();
+}
+
 if (!!window.EventSource) {
   var source = new EventSource('/events');
   

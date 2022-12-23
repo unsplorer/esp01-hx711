@@ -1,15 +1,13 @@
 #include "LittleFS.h"
 #include <ArduinoJson.h>
-#include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 #include <Wire.h>
 
+// #define OTA        //  enable OTA updating
 #define SSD1306
 // #define LCD1602
-// #define FILAMENT_SCALE // enable FILAMENT_SCALE component
-// #define SERVER
+#define FILAMENT_SCALE // enable FILAMENT_SCALE component
+#define SERVER         // enable webserver
 // ESP01 build pinouts
 #ifdef ESP01
 #define SDA 0x02
@@ -24,6 +22,15 @@
 #define LOADCELL_DOUT_PIN D5
 #define LOADCELL_SCK_PIN D6
 #endif
+
+#ifdef OTA
+#include <ArduinoOTA.h>
+#endif
+
+#ifdef SERVER
+#include <ESPAsyncWebServer.h>
+#endif
+
 // prototypes
 void loadConfig();
 void saveConfig();
@@ -204,10 +211,12 @@ void loadConfig() {
 void showWeight() {
   resetDisplay();
   lcd.setCursor(0, 0);
-  lcd.println("Filament Weight");
-  lcd.printf("%.2f grams", scale_data.filament_remaining);
+  lcd.println("Filament");
+  lcd.printf("%.2f g\n", scale_data.filament_remaining);
   lcd.display();
 }
+#endif
+
 #ifdef SERVER
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
@@ -236,10 +245,10 @@ void startServer() {
   server.addHandler(&events);
   server.on("/tare", HTTP_GET,
             [](AsyncWebServerRequest *request) { scale.tare(2); });
-  server.on("/calibrate", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/calibrate", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale_data.calFlag = true;
     String message;
-    if (request->hasParam("known_weight", false)) {
+    if (request->hasParam("known_weight", true)) {
       message = request->getParam("known_weight")->value();
     }
     scale_data.knownWeight = atoi(message.c_str());
@@ -265,8 +274,8 @@ void updateWeb() {
   json = String();
 }
 #endif
-#endif
 
+#ifdef OTA
 void startOTA() {
   resetDisplay();
   ArduinoOTA.onStart([]() {
@@ -281,7 +290,7 @@ void startOTA() {
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     resetDisplay();
     lcd.println("Updating");
-    lcd.setCursor(0, 1);
+    lcd.setCursor(0, 16);
     lcd.printf("Progress: %u%%", (progress / (total / 100)));
     lcd.display();
   });
@@ -301,17 +310,14 @@ void startOTA() {
   });
   ArduinoOTA.begin();
 }
+#endif
 
 void initDisplay() {
   if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     resetDisplay();
-    lcd.setTextSize(1);
+    lcd.setTextSize(2);
     lcd.setTextColor(SSD1306_WHITE);
     lcd.cp437(true);
-
-    // clearDisplay buffer
-    lcd.println("Testing!");
-    lcd.display();
 
     // Display test
     lcd.invertDisplay(true);
@@ -323,57 +329,65 @@ void initDisplay() {
   }
 }
 
-void setup() {
-  // Serial.begin(9600);
+void setupWiFi() {
   int retry = 0, config_done = 0;
-  LittleFS.begin();
-  Wire.begin(SDA, SCL); // start i2c interface
-  initDisplay();
-  // Serial.println("Display init successfull");
-
   WiFi.mode(WIFI_STA);
+
   // check whether WiFi connection can be established
   resetDisplay();
 
-  // Serial.println("connecting wifi");
-
-  lcd.print("Connecting...");
+  lcd.printf("Connecting to \n SSID: %s", WiFi.SSID().c_str());
   lcd.display();
+  WiFi.begin();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    if (retry++ >= 20) {
+    if (retry++ >= 40) {
       resetDisplay();
       lcd.println("Connection timeout");
-      lcd.println("RunSmartConfig");
       lcd.display();
-      // Serial.println("Starting smartconfig");
+      delay(250);
       WiFi.beginSmartConfig();
       // forever loop: exit only when SmartConfig packets have been received
       while (true) {
         delay(500);
-        // Serial.println("smartconfig waiting for connection");
         resetDisplay();
-        lcd.println("RunSmartConfig");
+        lcd.println("Waiting...\n\n");
+        lcd.println("Use Smartconfig");
+        lcd.println("app to setup");
+        lcd.println("WiFi");
         lcd.display();
         if (WiFi.smartConfigDone()) {
           resetDisplay();
-          // Serial.println("Config Success");
-          lcd.println("Config Success");
+          lcd.println("WiFi Config Success");
           lcd.display();
           config_done = 1;
           break; // exit from loop
         }
       }
       if (config_done == 1) {
+        WiFi.persistent(true);
+        WiFi.setAutoReconnect(true);
         break;
       }
     }
   }
-
+  resetDisplay();
+  lcd.printf("SSID: %s\nIP:", WiFi.SSID().c_str());
   lcd.println(WiFi.localIP());
+  lcd.printf("Hostname: %s\n", WiFi.hostname().c_str());
   lcd.display();
+}
 
+void setup() {
+  // Serial.begin(9600);
+  LittleFS.begin();
+  Wire.begin(SDA, SCL); // start i2c interface
+  initDisplay();
+  setupWiFi();
+
+#ifdef OTA
   startOTA();
+#endif
 
 #ifdef SERVER
   startServer();
@@ -386,7 +400,9 @@ void setup() {
 }
 
 void loop() {
+#ifdef OTA
   ArduinoOTA.handle();
+#endif
 
 #ifdef SERVER
   if (sendEvents.isReady()) {
@@ -396,9 +412,13 @@ void loop() {
 
 #ifdef FILAMENT_SCALE
   if (scale_data.calFlag) {
+#ifdef SERVER
     server.end();
+#endif
     calibrateScale();
+#ifdef SERVER
     startServer();
+#endif
   }
   if (getScaleData.isReady()) {
     getScaleData.run();

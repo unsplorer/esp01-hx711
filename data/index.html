@@ -1,41 +1,26 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Filament Scale Dashboard</title>
+< !DOCTYPE html > <html> < head > <title> Filament Scale Dashboard < /title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" type="text/css" href="toastify.css">
-    <link rel="stylesheet" type="text/css" href="script.css">
-    <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
-  </head>
-  <body>
-    
-    <div class="topnav">
-      <h1>
-        <button id="hamburger-menu" onclick="openNav()"></button>
-        Filament Dashboard
-      </h1>
-    </div>
-    <!-- <a href="#" id="new-toast" class="button">Try</a> -->
-    <div id="mySidenav" class="sidenav">
-      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-      <form action="/calibrate">
-        <input type="text" placeholder="Enter Known Weight" id="known_weight" name="known_weight" style="align-items: center;font-style: bold; margin-left: 1rem;height: 2.5rem;">
-        <input type="submit" value="Calibrate" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-calibrate" onclick="closeNav()">
-      </form>
-        <!-- <input type=button href="/calibrate" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-calibrate" onclick="closeNav()">Calibrate</button> -->
-        <a href="/tare" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-tare" onclick="closeNav()">Tare</a>
+    <link rel="icon" type="image/png " href=" favicon.png ">
+ < link rel = "stylesheet" href = "https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity = "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin = "anonymous" > <link rel="stylesheet" type="text/css" href="style.css"> < link rel = "stylesheet" type = "text/css" href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" > <link rel="stylesheet" type="text/css" href="toastify.css"> < link rel = "stylesheet" type = "text/css" href = "script.css" > <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"> < /script>
+  </head > <body> < div class = "topnav" > <h1> < button id = "hamburger-menu" onclick = "openNav()" > </button>;
+Filament Dashboard < /h1>
+    </div >
+
+<!-- <a href="#" id="new-toast" class="button">Try</a> --> <div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <form onsubmit="startCalibration()">
+    <input type="text" placeholder="Enter Known Weight" id="known_weight" name="known_weight" style="align-items: center;font-style: bold; margin-left: 1rem;height: 2.5rem;">
+      <input type="submit" value="Calibrate" style="align-items: center; margin-left: 2rem;" class="button" id="new-toast-calibrate" onclick="closeNav()"></form>
+      <!-- <input type=button href="/calibrate" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-calibrate" onclick="closeNav()">Calibrate</button> -->
+      <a href="/tare" style="align-items: center; margin-left: 2rem;" class="button" id="new-toast-tare" onclick="closeNav()">Tare</a>
       <!-- <form action="/tare">
-        <input type="text" id="offset" name="offset" style="align-items: center; margin-left: 2rem;">
-        <input type="submit" value="Offset" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-tare" onclick="closeNav()">
-      </form> -->
+              <input type="text" id="offset" name="offset" style="align-items: center; margin-left: 2rem;">
+              <input type="submit" value="Offset" style="align-items: center; margin-left: 2rem;" class ="button" id="new-toast-tare" onclick="closeNav()">
+            </form> -->
     </div>
-    
+
     <!-- Use any element to open the sidenav -->
-    
+
     <div class="content">
       <div class="card-grid">
         <div class="card">
@@ -49,10 +34,10 @@
       function openNav() {
         document.getElementById("mySidenav").style.width = "250px";
       }
-      
+
       function closeNav() {
         document.getElementById("mySidenav").style.width = "0";
       }
-      </script>
+    </script>
   </body>
-</html>
+</html>;
