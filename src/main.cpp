@@ -355,14 +355,14 @@ void setupWiFi() {
   // check whether WiFi connection can be established
   resetDisplay();
 
-  lcd.printf("Connecting\nto SSID:\n%s", WiFi.SSID().c_str());
+  lcd.printf("Trying\nSSID:\n%s", WiFi.SSID().c_str());
   lcd.display();
   WiFi.begin();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if (retry++ >= 40) {
       resetDisplay();
-      lcd.printf("Connection\ntimeout\n");
+      lcd.printf("WiFi\ntimeout\n");
       lcd.display();
       delay(250);
       WiFi.beginSmartConfig();
