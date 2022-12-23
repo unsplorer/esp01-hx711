@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Filament Scale Dashboard</title>
+    <title>
+      Filament Scale Dashboard
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="icon" type="image/png " href=" favicon.png ">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="http://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="script.css">
+    <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
   </head>
   <body>
-    
+    <!-- TOP NAV -->
     <div class="topnav">
       <h1>
         <button id="hamburger-menu" onclick="openNav()"></button>
         Filament Dashboard
       </h1>
     </div>
-    
+
+    <!-- SIDE NAV -->
     <div id="mySidenav" class="sidenav">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-      <a href="/calibrate">Calibrate</a>
-      <a href="/tare">Tare</a>
-
+      <button onclick = "startCalibration()" >Calibrate</button>
+      <button onclick = "tareScale()" >Tare</button >
     </div>
-    
-    <!-- Use any element to open the sidenav -->
-    
+
+    <!-- MAIN CONTENT -->
     <div class="content">
       <div class="card-grid">
         <div class="card">
           <p class="card-title">Ender 3 Filament Remaining</p>
-          <canvas id="gauge-humidity"></canvas>
+          <canvas id="gauge-filament"></canvas>
         </div>
       </div>
     </div>
+
+    <!-- SCRIPTS -->
     <script src="script.js"></script>
+    <!-- SIDE NAV SCRIPT -->
     <script>
       function openNav() {
         document.getElementById("mySidenav").style.width = "250px";
       }
-      
+
       function closeNav() {
         document.getElementById("mySidenav").style.width = "0";
       }
-      </script>
+    </script>
   </body>
-</html>
+</html></body></html>;
