@@ -122,7 +122,7 @@ void saveConfig() {
 
 void countdown(int millis) {
   while (millis) {
-    lcd.setCursor(116, 63);
+    lcd.setCursor(96, 48);
     lcd.print(millis / 1000);
     lcd.display();
     delay(1000);
@@ -134,7 +134,7 @@ void calibrateScale() {
   if (scale_data.knownWeight == 0) {
     resetDisplay();
     lcd.println("Cal Failed");
-    lcd.println("Weight UnKnown");
+    lcd.println("Weight\nUnKnown\n");
     lcd.display();
     scale_data.calFlag = false;
     delay(4000);
@@ -142,38 +142,33 @@ void calibrateScale() {
     return;
   }
   resetDisplay();
-  lcd.print("Calbrating");
-  lcd.setCursor(0, 1);
-  lcd.print("Scale");
+  lcd.print("Calibrating");
   lcd.display();
   countdown(2000);
   scale.set_scale();
   scale.tare();
   resetDisplay();
   lcd.printf("Place %dg", scale_data.knownWeight);
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 64);
   lcd.print("On Scale");
   lcd.display();
   countdown(5000);
   scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
   resetDisplay();
-  lcd.print("cal weight");
-  lcd.setCursor(0, 1);
-  lcd.printf("%f", scale_data.calibration);
+  lcd.println("cal weight");
+  lcd.printf("%f\n", scale_data.calibration);
   lcd.display();
   countdown(2000);
   scale.set_scale(scale_data.calibration);
   saveConfig();
   resetDisplay();
-  lcd.print("Calibration");
-  lcd.setCursor(0, 1);
-  lcd.print("Saved");
+  lcd.println("Calibration");
+  lcd.println("Saved");
   lcd.display();
   countdown(2000);
   resetDisplay();
-  lcd.print("Resetting");
-  lcd.setCursor(0, 1);
-  lcd.print("Device");
+  lcd.println("Resetting");
+  lcd.println("Device");
   scale_data.calFlag = false;
   ESP.reset();
 }
@@ -182,9 +177,9 @@ void loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
   if (!configFile) {
     resetDisplay();
-    lcd.print("Failed to Load");
-    lcd.setCursor(0, 1);
-    lcd.print("Calibration");
+    lcd.println("Failed");
+    lcd.println("to load");
+    lcd.println("Calibration");
     lcd.display();
     delay(4000);
     return;
@@ -202,7 +197,7 @@ void loadConfig() {
   resetDisplay();
   lcd.println("Loaded");
   lcd.println("Calibration");
-  lcd.printf("calvalue%.2f", scale_data.calibration);
+  lcd.printf("calvalue%.2f\n", scale_data.calibration);
   lcd.display();
   countdown(4000);
   configFile.close();
@@ -211,7 +206,7 @@ void loadConfig() {
 void showWeight() {
   resetDisplay();
   lcd.setCursor(0, 0);
-  lcd.println("Filament");
+  lcd.println("Filament\n");
   lcd.printf("%.2f g\n", scale_data.filament_remaining);
   lcd.display();
 }
@@ -227,7 +222,9 @@ void startServer() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html");
   });
+
   server.serveStatic("/", LittleFS, "/");
+
   server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request) {
     StaticJsonDocument<64> doc;
     doc["reading"] = scale_data.filament_remaining;
@@ -237,22 +234,32 @@ void startServer() {
     request->send(200, "application/json", json);
     json = String();
   });
+
   events.onConnect([](AsyncEventSourceClient *client) {
     if (client->lastId()) {
     }
     client->send("hello!", NULL, millis(), 10000);
   });
+
   server.addHandler(&events);
-  server.on("/tare", HTTP_GET,
-            [](AsyncWebServerRequest *request) { scale.tare(2); });
-  server.on("/calibrate", HTTP_POST, [](AsyncWebServerRequest *request) {
-    scale_data.calFlag = true;
-    String message;
-    if (request->hasParam("known_weight", true)) {
-      message = request->getParam("known_weight")->value();
-    }
-    scale_data.knownWeight = atoi(message.c_str());
+
+  server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
+    scale.tare(2);
+    request->send(200);
   });
+
+  server.on("/calibrate", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("known_weight")) {
+      scale_data.calFlag = true;
+      const char *value = request->getParam("known_weight")->value().c_str();
+      scale_data.knownWeight = atoi(value);
+      request->send(200);
+    } else {
+      request->send(500);
+    }
+
+  });
+
   server.on("/offset", HTTP_GET, [](AsyncWebServerRequest *request) {
     String message;
     if (request->hasParam("offset", false)) {
@@ -261,6 +268,7 @@ void startServer() {
     scale_data.offset = atoi(message.c_str());
     scale.set_offset(scale_data.offset);
   });
+
   server.begin();
 }
 
@@ -336,14 +344,14 @@ void setupWiFi() {
   // check whether WiFi connection can be established
   resetDisplay();
 
-  lcd.printf("Connecting to \n SSID: %s", WiFi.SSID().c_str());
+  lcd.printf("Connecting\nto SSID:\n%s", WiFi.SSID().c_str());
   lcd.display();
   WiFi.begin();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if (retry++ >= 40) {
       resetDisplay();
-      lcd.println("Connection timeout");
+      lcd.printf("Connection\ntimeout\n");
       lcd.display();
       delay(250);
       WiFi.beginSmartConfig();
@@ -358,7 +366,7 @@ void setupWiFi() {
         lcd.display();
         if (WiFi.smartConfigDone()) {
           resetDisplay();
-          lcd.println("WiFi Config Success");
+          lcd.printf("WiFi\nConfig\nSuccess");
           lcd.display();
           config_done = 1;
           break; // exit from loop
@@ -372,7 +380,7 @@ void setupWiFi() {
     }
   }
   resetDisplay();
-  lcd.printf("SSID: %s\nIP:", WiFi.SSID().c_str());
+  lcd.printf("SSID:\n%s\nIP:\n", WiFi.SSID().c_str());
   lcd.println(WiFi.localIP());
   lcd.printf("Hostname: %s\n", WiFi.hostname().c_str());
   lcd.display();
