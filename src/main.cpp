@@ -255,11 +255,14 @@ void showWeight() {
   ip = WiFi.localIP().toString().c_str();
   resetDisplay();
   lcd.setTextSize(1);
-  centerText("Filament Remaining\n\n");
+  centerText("Filament Remaining\n");
   lcd.setTextSize(3);
   centerText(filamentRemaining);
   //  lcd.printf("%.1fg\n", scale_data.filament_remaining);
   lcd.setTextSize(1);
+  lcd.setCursor(0,48);
+  lcd.print("Hostname:");
+  justifyRight(WiFi.hostname());
   lcd.setCursor(0,56);
   lcd.print("IP:");
   justifyRight(ip);

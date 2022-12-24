@@ -22,7 +22,10 @@
     <!-- SIDE NAV -->
     <div id="mySidenav" class="sidenav">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-      <button onclick = "startCalibration()" >Calibrate</button>
+      <form>
+        <input type="number" id="calWeight" placeholder="Enter Known Weight"/>
+        <button onclick = "startCalibration()" >Calibrate</button>
+      </form>
       <button onclick = "tareScale()" >Tare</button >
     </div>
 

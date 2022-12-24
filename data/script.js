@@ -20,7 +20,10 @@ function getReadings(){
 
 function startCalibration(){
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/calibrate?known_weight=100", true);
+  let calWeight = document.getElementById("calWeight").value;
+  // let calWeight = 100;
+  console.log(calWeight);
+  xhr.open("POST", "/calibrate?known_weight=" + calWeight, false);
   xhr.send();
 }
 
