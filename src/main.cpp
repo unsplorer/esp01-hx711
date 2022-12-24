@@ -3,7 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
-// #define OTA        //  enable OTA updating
+#define OTA        //  enable OTA updating
 #define SSD1306
 // #define LCD1602
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
@@ -214,6 +214,11 @@ void loadConfig() {
   configFile.close();
 }
 
+/**********************************************************************/
+/*!
+  @brief  Update weight on Display
+*/
+/**********************************************************************/
 void showWeight() {
   resetDisplay();
   lcd.setCursor(0, 0);
@@ -223,6 +228,11 @@ void showWeight() {
 }
 #endif
 
+/**********************************************************************/
+/*!
+  SERVER SECTION
+*/
+/**********************************************************************/
 #ifdef SERVER
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
