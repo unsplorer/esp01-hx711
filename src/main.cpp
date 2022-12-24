@@ -3,7 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
-#define OTA        //  enable OTA updating
+#define OTA //  enable OTA updating
 #define SSD1306
 // #define LCD1602
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
@@ -220,12 +220,12 @@ void loadConfig() {
   @param text input text
 */
 /**********************************************************************/
-void justifyRight(const String text){
+void justifyRight(const String text) {
   int16_t x1, y1;
   uint16_t w, h;
 
   lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
-  lcd.setCursor((SCREEN_WIDTH - w),lcd.getCursorY());
+  lcd.setCursor((SCREEN_WIDTH - w), lcd.getCursorY());
   lcd.println(text);
 }
 /**********************************************************************/
@@ -298,7 +298,6 @@ void startServer() {
     } else {
       request->send(500);
     }
-
   });
 
   server.on("/offset", HTTP_GET, [](AsyncWebServerRequest *request) {
