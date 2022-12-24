@@ -125,10 +125,12 @@ void countDown(int millis) {
   while (secondsLeft) {
     if (secondsLeft < 10) {
       lcd.setCursor(96, 48);
-      lcd.print("  ");
+      lcd.fillRect(96,48,SCREEN_WIDTH-96,SCREEN_HEIGHT-48,BLACK);
       lcd.display();
       lcd.setCursor(108, 48);
     } else {
+      lcd.fillRect(96, 48, SCREEN_WIDTH - 96, SCREEN_HEIGHT - 48, BLACK);
+      lcd.display();
       lcd.setCursor(96, 48);
     }
     lcd.print(secondsLeft);
@@ -138,7 +140,7 @@ void countDown(int millis) {
     secondsLeft--;
   }
   lcd.setCursor(96, 48);
-  lcd.print("  ");
+  lcd.print("    ");
   lcd.display();
 }
 
@@ -160,9 +162,7 @@ void calibrateScale() {
   scale.set_scale();
   scale.tare();
   resetDisplay();
-  lcd.printf("Place %dg", scale_data.knownWeight);
-  lcd.setCursor(0, 64);
-  lcd.print("On Scale");
+  lcd.printf("Place %dg\nOn Scale", scale_data.knownWeight);
   lcd.display();
   countDown(5000);
   scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
@@ -210,7 +210,7 @@ void loadConfig() {
   lcd.println("Loaded");
   lcd.println("config");
   lcd.display();
-  countDown(4000);
+  countDown(2000);
   configFile.close();
 }
 
@@ -230,18 +230,38 @@ void justifyRight(const String text) {
 }
 /**********************************************************************/
 /*!
+  @brief  Output centered text
+  @param text input text
+*/
+/**********************************************************************/
+void centerText(const char* text) {
+  int16_t x1, y1;
+  uint16_t w, h;
+
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w) / 2, lcd.getCursorY());
+  lcd.println(text);
+}
+/**********************************************************************/
+/*!
   @brief  Update weight on Display
 */
 /**********************************************************************/
 void showWeight() {
   String ip;
+  char filamentRemaining[8];
+
+  sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
   ip = WiFi.localIP().toString().c_str();
   resetDisplay();
-  lcd.setCursor(0, 0);
-  lcd.println("Filament\n");
-  lcd.printf("%.2f g\n", scale_data.filament_remaining);
   lcd.setTextSize(1);
-  lcd.println();
+  centerText("Filament Remaining\n\n");
+  lcd.setTextSize(3);
+  centerText(filamentRemaining);
+  //  lcd.printf("%.1fg\n", scale_data.filament_remaining);
+  lcd.setTextSize(1);
+  lcd.setCursor(0,56);
+  lcd.print("IP:");
   justifyRight(ip);
   lcd.display();
   lcd.setTextSize(2);
@@ -257,7 +277,7 @@ void showWeight() {
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 
-Task sendEvents(0, 5000, &updateWeb);
+Task sendEvents(0, 1250, &updateWeb);
 
 void startServer() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {

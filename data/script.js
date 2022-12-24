@@ -20,7 +20,7 @@ function getReadings(){
 
 function startCalibration(){
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/calibrate?known_weight=62", true);
+  xhr.open("POST", "/calibrate?known_weight=100", true);
   xhr.send();
 }
 
