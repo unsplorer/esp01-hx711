@@ -216,15 +216,35 @@ void loadConfig() {
 
 /**********************************************************************/
 /*!
+  @brief  Output right justified text
+  @param text input text
+*/
+/**********************************************************************/
+void justifyRight(const String text){
+  int16_t x1, y1;
+  uint16_t w, h;
+
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w),lcd.getCursorY());
+  lcd.println(text);
+}
+/**********************************************************************/
+/*!
   @brief  Update weight on Display
 */
 /**********************************************************************/
 void showWeight() {
+  String ip;
+  ip = WiFi.localIP().toString().c_str();
   resetDisplay();
   lcd.setCursor(0, 0);
   lcd.println("Filament\n");
   lcd.printf("%.2f g\n", scale_data.filament_remaining);
+  lcd.setTextSize(1);
+  lcd.println();
+  justifyRight(ip);
   lcd.display();
+  lcd.setTextSize(2);
 }
 #endif
 
