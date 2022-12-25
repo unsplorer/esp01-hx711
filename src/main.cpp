@@ -3,11 +3,11 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
-#define OTA //  enable OTA updating
-#define SSD1306
-// #define LCD1602
+#define OTA            // enable OTA updating
+#define SSD1306        // enable oled display
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
 #define SERVER         // enable webserver
+
 // ESP01 build pinouts
 #ifdef ESP01
 #define SDA 0x02
@@ -17,6 +17,7 @@
 #define LOADCELL_DOUT_PIN TX_PIN
 #define LOADCELL_SCK_PIN RX_PIN
 #endif
+
 // nodemcu build pinouts
 #ifdef NODEMCUV2
 #define LOADCELL_DOUT_PIN D5
@@ -56,6 +57,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #endif
+
 class Task {
 private:
   unsigned long lastRun;
