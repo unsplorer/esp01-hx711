@@ -45,6 +45,7 @@ void tareScale();
 void startServer();
 void setup();
 void updateWeb();
+void updateDisplay();
 
 #ifdef LCD1602
 #include <LiquidCrystal_I2C.h>
