@@ -1,5 +1,6 @@
 #include "LittleFS.h"
 #include <ArduinoJson.h>
+// #include <AsyncElegantOTA.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
@@ -89,7 +90,7 @@ void resetDisplay() {
 #define EMPTY_SPOOL_WEIGHT 241
 #define ROLLER_WEIGHT 46
 HX711 scale; // create hx711 object
-Task updateDisplayWeight = Task(0, 2500, &showWeight);
+Task updatedisplay = Task(0, 2500, &updateDisplay);
 Task getScaleData = Task(0, 2500, &updateScale);
 typedef struct scaleData {
   float weight = 0;
@@ -222,7 +223,7 @@ void loadConfig() {
   @param text input text
 */
 /**********************************************************************/
-void justifyRight(const String text) {
+void justifyRight(const char* text) {
   int16_t x1, y1;
   uint16_t w, h;
 
@@ -250,26 +251,46 @@ void centerText(const char* text) {
 */
 /**********************************************************************/
 void showWeight() {
-  String ip;
+  
   char filamentRemaining[8];
-
   sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
-  ip = WiFi.localIP().toString().c_str();
+
   resetDisplay();
   lcd.setTextSize(1);
   centerText("Filament Remaining\n");
   lcd.setTextSize(3);
   centerText(filamentRemaining);
-  //  lcd.printf("%.1fg\n", scale_data.filament_remaining);
+  lcd.setTextSize(2);
+}
+
+/**********************************************************************/
+/*!
+  @brief  Update WiFi status on Display
+*/
+/**********************************************************************/
+void showWiFiStatus(){
+  const char *ip = WiFi.localIP().toString().c_str();
+
   lcd.setTextSize(1);
-  lcd.setCursor(0,48);
+  lcd.setCursor(0, 48);
   lcd.print("Hostname:");
-  justifyRight(WiFi.hostname());
-  lcd.setCursor(0,56);
+  justifyRight(WiFi.hostname().c_str());
+  lcd.setCursor(0, 56);
   lcd.print("IP:");
   justifyRight(ip);
-  lcd.display();
   lcd.setTextSize(2);
+}
+
+/**********************************************************************/
+/*!
+  @brief  Update display
+*/
+/**********************************************************************/
+void updateDisplay() {
+  resetDisplay();
+  showWeight();
+  showWiFiStatus();
+  lcd.display();
 }
 #endif
 
@@ -333,7 +354,7 @@ void startServer() {
     scale_data.offset = atoi(message.c_str());
     scale.set_offset(scale_data.offset);
   });
-
+  // AsyncElegantOTA.begin(&server);
   server.begin();
 }
 
@@ -362,9 +383,13 @@ void startOTA() {
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     resetDisplay();
+    char progressPercent[16];
+    sprintf(progressPercent,"%u%%",(progress / (total / 100)));
     lcd.println("Updating");
     lcd.setCursor(0, 16);
-    lcd.printf("Progress: %u%%", (progress / (total / 100)));
+    lcd.print("Progress:");
+    lcd.setCursor(0,48);
+    justifyRight(progressPercent);
     lcd.display();
   });
   ArduinoOTA.onError([](ota_error_t error) {
@@ -496,8 +521,8 @@ void loop() {
   if (getScaleData.isReady()) {
     getScaleData.run();
   }
-  if (updateDisplayWeight.isReady()) {
-    updateDisplayWeight.run();
+  if (updatedisplay.isReady()) {
+    updatedisplay.run();
   }
 #endif
 
