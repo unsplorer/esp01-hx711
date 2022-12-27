@@ -185,6 +185,8 @@ void calibrateScale() {
   resetDisplay();
   lcd.println("Resetting");
   lcd.println("Device");
+  lcd.display();
+  countDown(2000);
   scale_data.calFlag = false;
   ESP.reset();
 }
