@@ -450,11 +450,13 @@ void setupWiFi() {
       while (true) {
         delay(500);
         resetDisplay();
+        lcd.setTextSize(1);
         lcd.println("Waiting...\n\n");
         lcd.println("Use Smartconfig");
         lcd.println("app to setup");
         lcd.println("WiFi");
         lcd.display();
+        lcd.setTextSize(2);
         if (WiFi.smartConfigDone()) {
           resetDisplay();
           lcd.printf("WiFi\nConfig\nSuccess");
