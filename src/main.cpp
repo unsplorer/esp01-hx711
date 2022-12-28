@@ -19,6 +19,7 @@
 #define LOADCELL_SCK_PIN RX_PIN
 #endif
 
+bool updating = false;
 // nodemcu build pinouts
 #ifdef NODEMCUV2
 #define LOADCELL_DOUT_PIN D5
@@ -46,10 +47,11 @@ void startServer();
 void setup();
 void updateWeb();
 void updateDisplay();
+void justifyRight(const char *text);
 
 #ifdef LCD1602
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+    LiquidCrystal_I2C lcd(0x27, 16, 2);
 #endif
 #ifdef SSD1306
 #include <Adafruit_SSD1306.h>
@@ -128,6 +130,7 @@ void countDown(int millis) {
   int secondsLeft = millis / 1000;
   while (secondsLeft) {
     if (secondsLeft < 10) {
+      
       lcd.setCursor(96, 48);
       lcd.fillRect(96,48,SCREEN_WIDTH-96,SCREEN_HEIGHT-48,BLACK);
       lcd.display();
@@ -155,7 +158,7 @@ void calibrateScale() {
     lcd.println("Weight\nUnKnown\n");
     lcd.display();
     scale_data.calFlag = false;
-    delay(4000);
+    countDown(4000);
     // ESP.reset();
     return;
   }
@@ -272,8 +275,8 @@ void showWeight() {
 */
 /**********************************************************************/
 void showWiFiStatus(){
-  const char *ip = WiFi.localIP().toString().c_str();
-
+  char ip[24] = {};
+  sprintf(ip,"%s",WiFi.localIP().toString().c_str());
   lcd.setTextSize(1);
   lcd.setCursor(0, 48);
   lcd.print("Hostname:");
@@ -364,6 +367,7 @@ void startServer() {
 void updateWeb() {
   StaticJsonDocument<64> doc;
   doc["reading"] = scale_data.filament_remaining;
+  doc["rssi"] = WiFi.RSSI();
   String json;
   serializeJson(doc, json);
   events.send("ping", NULL, millis());
@@ -374,8 +378,12 @@ void updateWeb() {
 
 #ifdef OTA
 void startOTA() {
-  resetDisplay();
+  // resetDisplay();
   ArduinoOTA.onStart([]() {
+    updating = true;
+    // events.close();
+    // server.end();
+    resetDisplay();
     lcd.println("Start");
     lcd.display();
   });
@@ -383,19 +391,21 @@ void startOTA() {
     resetDisplay();
     lcd.println("Success");
     lcd.display();
+    updating = false;
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    resetDisplay();
-    char progressPercent[16];
-    sprintf(progressPercent,"%u%%",(progress / (total / 100)));
-    lcd.println("Updating");
-    lcd.setCursor(0, 16);
-    lcd.print("Progress:");
-    lcd.setCursor(0,48);
-    justifyRight(progressPercent);
-    lcd.display();
+    // resetDisplay();
+    // char progressPercent[16];
+    // sprintf(progressPercent,"%u%%",(progress / (total / 100)));
+    // lcd.println("Updating");
+    // lcd.setCursor(0, 16);
+    // lcd.print("Progress:");
+    // lcd.setCursor(0,48);
+    // justifyRight(progressPercent);
+    // lcd.display();
   });
   ArduinoOTA.onError([](ota_error_t error) {
+    updating = false;
     lcd.printf("Error[%u]: ", error);
     lcd.display();
     if (error == OTA_AUTH_ERROR)
@@ -474,11 +484,6 @@ void setupWiFi() {
       }
     }
   }
-  resetDisplay();
-  lcd.printf("SSID:\n%s\nIP:\n", WiFi.SSID().c_str());
-  lcd.println(WiFi.localIP());
-  lcd.printf("Hostname: %s\n", WiFi.hostname().c_str());
-  lcd.display();
 }
 
 void setup() {
@@ -507,29 +512,30 @@ void loop() {
   ArduinoOTA.handle();
 #endif
 
-#ifdef SERVER
-  if (sendEvents.isReady()) {
-    sendEvents.run();
-  }
-#endif
+if (!updating){
+  #ifdef SERVER
+      if (sendEvents.isReady()) {
+        sendEvents.run();
+      }
+  #endif
 
-#ifdef FILAMENT_SCALE
-  if (scale_data.calFlag) {
-#ifdef SERVER
-    server.end();
-#endif
-    calibrateScale();
-#ifdef SERVER
-    startServer();
-#endif
-  }
-  if (getScaleData.isReady()) {
-    getScaleData.run();
-  }
-  if (updatedisplay.isReady()) {
-    updatedisplay.run();
-  }
-#endif
-
-  yield();
+  #ifdef FILAMENT_SCALE
+      if (scale_data.calFlag) {
+  #ifdef SERVER
+        server.end();
+  #endif
+        calibrateScale();
+  #ifdef SERVER
+        startServer();
+  #endif
+      }
+      if (getScaleData.isReady()) {
+        getScaleData.run();
+      }
+      if (updatedisplay.isReady()) {
+        updatedisplay.run();
+      }
+  #endif
+}
+yield();
 }
