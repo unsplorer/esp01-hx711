@@ -3,59 +3,56 @@
   <head>
     <title>Filament Scale Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-      <!-- bootstrap start -->
-      <!-- Font Awesome -->
-      <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/> <!-- Google Fonts -->
-      <link
-      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
-      <!-- MDB -->
-      <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css" rel="stylesheet"/>
-      <!-- bootstrap end -->
-      <link rel="icon" type="image/png " href=" favicon.png"/>
-      <link rel="stylesheet" type="text/css" href="style.css"/>
-      <link rel="stylesheet" type="text/css" href="script.css"/>
-      <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
-    </head>
-    <body>
-      <!-- TOP NAV -->
-      <nav class="navbar bg-dark">
-        <div class="navbar-text fs-1 text-light mx-auto">
-          Filament Dashboard
-        </div>
-      </nav>
+    <!-- bootstrap start -->
+    <!-- Font Awesome -->
+    <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/> <!-- Google Fonts -->
+    <link
+    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+    <!-- MDB -->
+    <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css" rel="stylesheet"/>
+    <!-- bootstrap end -->
+    <link rel="icon" type="image/png " href=" favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="stylesheet" type="text/css" href="script.css"/>
+    <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
+  </head>
+  <body>
+    <!-- TOP NAV -->
+    <nav class="navbar bg-dark">
+      <div class="navbar-text fs-1 text-light mx-auto">
+        Filament Dashboard
+      </div>
+    </nav>
 
-      <!-- MAIN CONTENT -->
-      <!-- <div class="container bg-white"> -->
-      <div class="card-grid mt-5">
-        <div class="card py-3 px-5 mx-auto">
-          <p class="card-title">Ender 3 Filament Remaining</p>
-          <canvas id="gauge-filament"></canvas>
-          <div class="row mt-n3 mx-auto">
-            <div class="col">
-              <btn class="btn btn-primary" onclick="tareScale()">Tare</btn>
-            </div>
-            <div
-              class="col">
-              <!-- calibration dialog -->
-              <dialog id="calDialog">
-                <form id="calForm">
-                  <input name='calNumber' type="number" id="calWeight" placeholder="Known weight in grams"/>
-                  <div class='pt-2'>
-                    <btn class='btn btn-success' id='confirmBtn'>Calibrate</btn>
-                    <btn class="btn btn-danger" id='calCancel' value="cancel">Cancel</btn>
-                  </div>
-                </form>
-              </dialog>
-              <btn class="btn btn-warning" id="showCalDialog">Calibrate</btn>
-
-            </div>
+    <!-- MAIN CONTENT -->
+    <div class="card-grid mt-5">
+      <div class="card py-3 px-5 mx-auto">
+        <p class="card-title">Ender 3 Filament Remaining</p>
+        <canvas id="gauge-filament"></canvas>
+        <!-- gauge buttons -->
+        <div class="row mt-n3 mx-auto">
+          <div class="col">
+            <btn class="btn btn-primary" onclick="tareScale()">Tare</btn>
+          </div>
+          <!-- calibration dialog -->
+          <div class="col">
+            <dialog id="calDialog">
+              <form id="calForm">
+                <input name='calNumber' type="number" id="calWeight" placeholder="Known weight in grams"/>
+                <div class='pt-2'>
+                  <btn class='btn btn-success' id='confirmBtn'>Calibrate</btn>
+                  <btn class="btn btn-danger" id='calCancel' value="cancel">Cancel</btn>
+                </div>
+              </form>
+            </dialog>
+            <btn class="btn btn-warning" id="showCalDialog">Calibrate</btn>
           </div>
         </div>
       </div>
-      <!-- SCRIPTS -->
-      <script src="script.js"></script>
-    </body>
-  </html>
-</html>
+    </div>
+    <!-- SCRIPTS -->
+    <script src="script.js"></script>
+  </body>
+</html></html>
