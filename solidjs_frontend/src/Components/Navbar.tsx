@@ -7,7 +7,7 @@ const Navbar: Component = () => {
   return (
     <nav class="bg-zinc-800 text-white flex items-center justify-between">
       <div class='flex items-center'>
-        <img src="public/logo.png" class='h-16 w-16 filter hue-rotate-60 saturate-200' />
+        <img src="logo.png" class='h-16 w-16 filter hue-rotate-60 saturate-200' />
         <h1 class='text-xl ml-6'>Fila-Scale</h1>
       </div>
       <div class='mr-6'>
