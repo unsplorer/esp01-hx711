@@ -8,7 +8,6 @@ const App: Component = () => {
       <Navbar/>
       <div class='mt-6 flex items-center text-center justify-center'>
         <Card title='Filament Remaining'/>
-        <div id='gauge'></div>
       </div>
     </main>
   )
