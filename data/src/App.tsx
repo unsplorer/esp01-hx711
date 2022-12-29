@@ -6,11 +6,12 @@ const App: Component = () => {
   return (
     <main>
       <Navbar/>
-      <div class='flex items-center text-center justify-center'>
-        <Card/>
+      <div class='mt-6 flex items-center text-center justify-center'>
+        <Card title='Filament Remaining'/>
+        <div id='gauge'></div>
       </div>
     </main>
-  );
-};
+  )
+}
 
 export default App;

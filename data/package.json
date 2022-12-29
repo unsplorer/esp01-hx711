@@ -17,6 +17,7 @@
     "vite-plugin-solid": "^2.5.0"
   },
   "dependencies": {
+    "canvas-gauges": "^2.1.7-radial",
     "solid-js": "^1.6.6"
   }
 }
