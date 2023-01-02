@@ -4,6 +4,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
+// spool weight with rollers = 289g
 #define OTA            // enable OTA updating
 #define SSD1306        // enable oled display
 #define FILAMENT_SCALE // enable FILAMENT_SCALE component
@@ -90,7 +91,7 @@ void resetDisplay() {
 
 #ifdef FILAMENT_SCALE
 #include <HX711.h>
-#define EMPTY_SPOOL_WEIGHT 241
+// #define spool_weight 241
 #define ROLLER_WEIGHT 46
 HX711 scale; // create hx711 object
 Task updatedisplay = Task(0, 2500, &updateDisplay);
@@ -99,6 +100,7 @@ typedef struct scaleData {
   float weight = 0;
   float calibration = 0;
   float offset = 0;
+  float spool_weight = 0;
   float filament_remaining = 0;
   bool calFlag = false;
   int knownWeight = 0;
@@ -108,7 +110,7 @@ scaleData_t scale_data;
 void updateScale() {
   if (scale.is_ready()) {
     scale_data.weight = (scale.get_units(2));
-    scale_data.filament_remaining = scale_data.weight - EMPTY_SPOOL_WEIGHT;
+    scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
     if (scale_data.filament_remaining < 0) {
       scale_data.filament_remaining = 0;
     }
@@ -121,6 +123,7 @@ void saveConfig() {
   StaticJsonDocument<64> doc;
   doc["calibration"] = scale.get_scale();
   doc["offset"] = scale.get_offset();
+  doc["spool_weight"] = scale_data.spool_weight;
   File configFile = LittleFS.open("/config.json", "w");
   serializeJson(doc, configFile);
   configFile.close();
@@ -209,6 +212,7 @@ void loadConfig() {
   deserializeJson(doc, configFile);
   scale_data.calibration = doc["calibration"];
   scale_data.offset = doc["offset"];
+  scale_data.spool_weight = doc["spool_weight"];
   if (scale_data.offset) {
     scale.set_offset(scale_data.offset);
   }
@@ -360,6 +364,15 @@ void startServer() {
     scale_data.offset = atoi(message.c_str());
     scale.set_offset(scale_data.offset);
   });
+
+    server.on("/spool", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String message;
+    if (request->hasParam("spool", false)) {
+      message = request->getParam("spool")->value();
+    }
+    scale_data.spool_weight = atoi(message.c_str());
+    saveConfig();
+  });
   // AsyncElegantOTA.begin(&server);
   server.begin();
 }
@@ -368,6 +381,9 @@ void updateWeb() {
   StaticJsonDocument<64> doc;
   doc["reading"] = scale_data.filament_remaining;
   doc["rssi"] = WiFi.RSSI();
+  doc["raw_weight"] = scale_data.weight;
+  doc["spool_weight"] = scale_data.spool_weight;
+  doc["offset"] = scale_data.offset;
   String json;
   serializeJson(doc, json);
   events.send("ping", NULL, millis());
