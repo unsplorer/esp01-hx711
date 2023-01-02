@@ -356,13 +356,13 @@ void startServer() {
     }
   });
 
-  server.on("/offset", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/spool", HTTP_GET, [](AsyncWebServerRequest *request) {
     String message;
-    if (request->hasParam("offset", false)) {
-      message = request->getParam("offset")->value();
+    if (request->hasParam("spool", false)) {
+      message = request->getParam("spool")->value();
     }
-    scale_data.offset = atoi(message.c_str());
-    scale.set_offset(scale_data.offset);
+    scale_data.spool_weight = atoi(message.c_str());
+    saveConfig();
   });
 
     server.on("/spool", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -380,10 +380,8 @@ void startServer() {
 void updateWeb() {
   StaticJsonDocument<64> doc;
   doc["reading"] = scale_data.filament_remaining;
-  doc["rssi"] = WiFi.RSSI();
   doc["raw_weight"] = scale_data.weight;
   doc["spool_weight"] = scale_data.spool_weight;
-  doc["offset"] = scale_data.offset;
   String json;
   serializeJson(doc, json);
   events.send("ping", NULL, millis());
