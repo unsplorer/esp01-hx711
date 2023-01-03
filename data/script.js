@@ -122,7 +122,6 @@ if (!!window.EventSource) {
   }, false);
   
   source.addEventListener('new_readings', function(e) {
-    console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
     gaugeFilament.value = myObj.reading;

@@ -111,9 +111,9 @@ void updateScale() {
   if (scale.is_ready()) {
     scale_data.weight = (scale.get_units(2));
     scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
-    if (scale_data.filament_remaining < 0) {
-      scale_data.filament_remaining = 0;
-    }
+    // if (scale_data.filament_remaining < 0) {
+    //   scale_data.filament_remaining = 0;
+    // }
     scale_data.calibration = scale.get_scale();
     scale_data.offset = scale.get_offset();
   }
@@ -325,20 +325,11 @@ void startServer() {
   server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request) {
     StaticJsonDocument<64> doc;
     doc["reading"] = scale_data.filament_remaining;
-    doc["offset"] = scale_data.offset;
     String json;
     serializeJson(doc, json);
     request->send(200, "application/json", json);
     json = String();
   });
-
-  events.onConnect([](AsyncEventSourceClient *client) {
-    if (client->lastId()) {
-    }
-    client->send("hello!", NULL, millis(), 10000);
-  });
-
-  server.addHandler(&events);
 
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale.tare(2);
@@ -346,38 +337,36 @@ void startServer() {
   });
 
   server.on("/calibrate", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->hasParam("known_weight")) {
+    if (request->hasParam("known_weight", true)) {
       scale_data.calFlag = true;
-      const char *value = request->getParam("known_weight")->value().c_str();
-      scale_data.knownWeight = atoi(value);
+      const char *weight = request->getParam("known_weight", true)->value().c_str();
+      scale_data.knownWeight = atoi(weight);
       request->send(200);
+      request->redirect("/");
     } else {
       request->send(500);
     }
   });
 
-  server.on("/spool", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String message;
-    if (request->hasParam("spool", false)) {
-      message = request->getParam("spool")->value();
+  server.on("/spool", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("spool", true)) {
+      const char *value = request->getParam("spool", true)->value().c_str();
+      scale_data.spool_weight = atoi(value);
+      request->send(200);
+      request->redirect("/");
+      saveConfig(); 
+    } else {
+      request->send(500);
     }
-    scale_data.spool_weight = atoi(message.c_str());
-    // request->send(200);
-    request->redirect("/");
-    saveConfig();
   });
 
-    server.on("/spool", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String message;
-    if (request->hasParam("spool", true)) {
-      message = request->getParam("spool")->value();
+  server.addHandler(&events);
+  events.onConnect([](AsyncEventSourceClient *client) {
+    if (client->lastId()) {
     }
-    scale_data.spool_weight = atoi(message.c_str());
-    // request->send(200);
-    request->redirect("/");
-    saveConfig();
+    client->send("hello!", NULL, millis(), 10000);
   });
-  // AsyncElegantOTA.begin(&server);
+
   server.begin();
 }
 
@@ -393,6 +382,11 @@ void updateWeb() {
   json = String();
 }
 #endif
+/**********************************************************************/
+/*!
+  END SERVER SECTION
+*/
+/**********************************************************************/
 
 #ifdef OTA
 void startOTA() {
@@ -505,55 +499,54 @@ void setupWiFi() {
 }
 
 void setup() {
-  // Serial.begin(9600);
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
   initDisplay();
   setupWiFi();
 
-#ifdef OTA
-  startOTA();
-#endif
+  #ifdef OTA
+    startOTA();
+  #endif
 
-#ifdef SERVER
-  startServer();
-#endif
-
-#ifdef FILAMENT_SCALE
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  loadConfig();
-#endif
-}
-
-void loop() {
-#ifdef OTA
-  ArduinoOTA.handle();
-#endif
-
-if (!updating){
   #ifdef SERVER
-      if (sendEvents.isReady()) {
-        sendEvents.run();
-      }
+    startServer();
   #endif
 
   #ifdef FILAMENT_SCALE
-      if (scale_data.calFlag) {
-  #ifdef SERVER
-        server.end();
-  #endif
-        calibrateScale();
-  #ifdef SERVER
-        startServer();
-  #endif
-      }
-      if (getScaleData.isReady()) {
-        getScaleData.run();
-      }
-      if (updatedisplay.isReady()) {
-        updatedisplay.run();
-      }
+    scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+    loadConfig();
   #endif
 }
-yield();
+
+void loop() {
+  #ifdef OTA
+    ArduinoOTA.handle();
+  #endif
+
+  if (!updating){
+    #ifdef SERVER
+        if (sendEvents.isReady()) {
+          sendEvents.run();
+        }
+    #endif
+
+    #ifdef FILAMENT_SCALE
+        if (scale_data.calFlag) {
+    #ifdef SERVER
+          server.end();
+    #endif
+          calibrateScale();
+    #ifdef SERVER
+          startServer();
+    #endif
+        }
+        if (getScaleData.isReady()) {
+          getScaleData.run();
+        }
+        if (updatedisplay.isReady()) {
+          updatedisplay.run();
+        }
+    #endif
+  }
+  yield();
 }
