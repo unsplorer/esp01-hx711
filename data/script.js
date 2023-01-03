@@ -2,25 +2,25 @@
 window.addEventListener('load', getReadings);
 
 // calibration dialog
-const showCalButton = document.getElementById("showCalDialog");
-const calDialog = document.getElementById("calDialog");
-const calConfimButton = document.getElementById("confirmBtn");
-const calCancel = document.getElementById('calCancel');
+// const showCalButton = document.getElementById("showCalDialog");
+// const calDialog = document.getElementById("calDialog");
+// const calConfimButton = document.getElementById("confirmBtn");
+// const calCancel = document.getElementById('calCancel');
 
-calCancel.addEventListener('click', ()=>{
-  calDialog.close();
-})
-showCalButton.addEventListener('click', () => {
-  calDialog.showModal();
-});
+// calCancel.addEventListener('click', ()=>{
+//   calDialog.close();
+// })
+// showCalButton.addEventListener('click', () => {
+//   calDialog.showModal();
+// });
 
 
-calConfimButton.addEventListener('click', () =>{
-  const calForm = document.getElementById('calForm');
-  const calWeight = calForm.calNumber.value;
-  startCalibration(calWeight);
-  calDialog.close();
-})
+// calConfimButton.addEventListener('click', () =>{
+//   const calForm = document.getElementById('calForm');
+//   const calWeight = calForm.calNumber.value;
+//   startCalibration(calWeight);
+//   calDialog.close();
+// })
 
 // Function to get current readings on the webpage when it loads for the first time
 function getReadings(){
@@ -38,15 +38,15 @@ function getReadings(){
 }
 
 
-function startCalibration(calWeight){
-  var xhr = new XMLHttpRequest();
-  // let calWeight = document.getElementById("calWeight").value;
-  // let calWeight = 100;
-  // console.log("calibrating scale");
-  // console.log(calWeight);
-  xhr.open("POST", "/calibrate?known_weight=" + calWeight, false);
-  xhr.send();
-}
+// function startCalibration(calWeight){
+//   var xhr = new XMLHttpRequest();
+//   // let calWeight = document.getElementById("calWeight").value;
+//   // let calWeight = 100;
+//   // console.log("calibrating scale");
+//   // console.log(calWeight);
+//   xhr.open("POST", "/calibrate?known_weight=" + calWeight, false);
+//   xhr.send();
+// }
 
 
 let tareScale = () =>{
