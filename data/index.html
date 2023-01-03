@@ -22,12 +22,8 @@
 
 <body>
   <!-- TOP NAV -->
-  <!-- <nav class="navbar bg-dark">
-      <div class="navbar-text fs-1 text-light mx-auto">
-        Filament Dashboard
-      </div>
-    </nav> -->
   <nav class="navbar navbar-dark bg-dark">
+
     <div class="container-fluid">
       <div class="navbar-text fs-4 text-light">
         Filament Dashboard
@@ -38,60 +34,30 @@
           aria-expanded="false">
           Settings
         </button>
+        
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <!-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton"> -->
-                <form class="form row" action="/spool" method="post">
-                  <input type="number" class="text-center" name="spool" id="spool" placeholder="Empty Spool Weight">
-                  <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
-                </form>
+            <form class="form row" action="/spool" method="post">
+              <input type="number" class="text-center" name="spool" id="spool" placeholder="Empty Spool Weight">
+              <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
+            </form>
             <form class="form row" action="/calibrate" method="post">
               <input type="number" class="text-center" name="known_weight" id="known_weight" placeholder="Known Weight eg.. 100g">
               <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
               <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
-
             </form>
         </div>
-
-        </div>
-        <!-- </ul> -->
       </div>
 
     </div>
   </nav>
-
-
-  <!-- SIDE NAV -->
-
   <!-- MAIN CONTENT -->
   <div class="card-grid mt-5">
     <div class="card py-3 px-5 mx-auto">
       <p class="card-title">Ender 3 Filament Remaining</p>
       <canvas id="gauge-filament"></canvas>
-      <!-- gauge buttons -->
-      <!-- <div class="row mt-n3 mx-auto">
-        <div class="col">
-          <btn class="btn btn-primary" onclick="tareScale()">Tare</btn>
-        </div> -->
-        <!-- calibration dialog -->
-        <!-- <div class="col">
-          <dialog id="calDialog">
-            <form id="calForm">
-              <input name='calNumber' type="number" id="calWeight" placeholder="Known weight in grams" />
-              <div class='pt-2'>
-                <btn class='btn btn-success' id='confirmBtn'>Calibrate</btn>
-                <btn class="btn btn-danger" id='calCancel' value="cancel">Cancel</btn>
-              </div>
-            </form>
-          </dialog>
-          <btn class="btn btn-warning" id="showCalDialog">Calibrate</btn>
-        </div> -->
-      <!-- </div> -->
     </div>
   </div>
   <!-- SCRIPTS -->
   <script src="script.js"></script>
 </body>
-
-</html>
-
 </html>
