@@ -362,6 +362,8 @@ void startServer() {
       message = request->getParam("spool")->value();
     }
     scale_data.spool_weight = atoi(message.c_str());
+    // request->send(200);
+    request->redirect("/");
     saveConfig();
   });
 
@@ -371,6 +373,8 @@ void startServer() {
       message = request->getParam("spool")->value();
     }
     scale_data.spool_weight = atoi(message.c_str());
+    // request->send(200);
+    request->redirect("/");
     saveConfig();
   });
   // AsyncElegantOTA.begin(&server);

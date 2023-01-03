@@ -32,20 +32,15 @@
       <div class="navbar-text fs-4 text-light">
         Filament Dashboard
       </div>
+
       <div class="dropdown">
-        <button
-          class="btn btn-info dropdown-toggle"
-          type="button"
-          id="dropdownMenuButton"
-          data-mdb-toggle="dropdown"
-          aria-expanded="false"
-        >
+        <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton" data-mdb-toggle="dropdown" aria-expanded="false">
           Empty Spool Weight
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <form  action="/spool" method="post">
-            <input type="number" id="spool" placeholder="Empty Spool Weight">
-            <button type="submit" class="btn btn-primary">Submit</button>
+          <form action="/spool" method="get">
+            <input type="number" name="spool" id="spool" placeholder="Empty Spool Weight">
+            <button type="submit" class="btn btn-primary" value="submit">Submit</button>
           </form>
         </ul>
       </div>
