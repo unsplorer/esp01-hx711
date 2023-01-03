@@ -369,7 +369,7 @@ void startServer() {
 
     server.on("/spool", HTTP_POST, [](AsyncWebServerRequest *request) {
     String message;
-    if (request->hasParam("spool", false)) {
+    if (request->hasParam("spool", true)) {
       message = request->getParam("spool")->value();
     }
     scale_data.spool_weight = atoi(message.c_str());
