@@ -352,9 +352,9 @@ void startServer() {
     if (request->hasParam("spool", true)) {
       const char *value = request->getParam("spool", true)->value().c_str();
       scale_data.spool_weight = atoi(value);
+      saveConfig(); 
       request->send(200);
       request->redirect("/");
-      saveConfig(); 
     } else {
       request->send(500);
     }
