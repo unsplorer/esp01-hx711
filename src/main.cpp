@@ -1,14 +1,16 @@
 #include "LittleFS.h"
 #include <ArduinoJson.h>
-// #include <AsyncElegantOTA.h>
+#include <ArduinoOTA.h>
+#include <ESPAsyncWebServer.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
+#include <HX711.h>
+#include <Adafruit_SSD1306.h>
 
+
+// #define spool_weight 241
+#define ROLLER_WEIGHT 46
 // spool weight with rollers = 289g
-#define OTA            // enable OTA updating
-#define SSD1306        // enable oled display
-#define FILAMENT_SCALE // enable FILAMENT_SCALE component
-#define SERVER         // enable webserver
 
 // ESP01 build pinouts
 #ifdef ESP01
@@ -20,27 +22,20 @@
 #define LOADCELL_SCK_PIN RX_PIN
 #endif
 
-bool updating = false;
 // nodemcu build pinouts
 #ifdef NODEMCUV2
 #define LOADCELL_DOUT_PIN D5
 #define LOADCELL_SCK_PIN D6
 #endif
 
-#ifdef OTA
-#include <ArduinoOTA.h>
-#endif
 
-#ifdef SERVER
-#include <ESPAsyncWebServer.h>
-#endif
 
 // prototypes
 void loadConfig();
 void saveConfig();
 void updateScale();
 void calibrateScale();
-void countdown(int millis);
+void countDown(int millis);
 void showWeight();
 void startOTA();
 void tareScale();
@@ -50,18 +45,12 @@ void updateWeb();
 void updateDisplay();
 void justifyRight(const char *text);
 
-#ifdef LCD1602
-#include <LiquidCrystal_I2C.h>
-    LiquidCrystal_I2C lcd(0x27, 16, 2);
-#endif
-#ifdef SSD1306
-#include <Adafruit_SSD1306.h>
+
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#endif
 
 class Task {
 private:
@@ -89,10 +78,7 @@ void resetDisplay() {
   lcd.setCursor(0, 0);
 }
 
-#ifdef FILAMENT_SCALE
-#include <HX711.h>
-// #define spool_weight 241
-#define ROLLER_WEIGHT 46
+
 HX711 scale; // create hx711 object
 Task updatedisplay = Task(0, 2500, &updateDisplay);
 Task getScaleData = Task(0, 2500, &updateScale);
@@ -103,6 +89,7 @@ typedef struct scaleData {
   float spool_weight = 0;
   float filament_remaining = 0;
   bool calFlag = false;
+  bool saveFlag = false;
   int knownWeight = 0;
 } scaleData_t;
 scaleData_t scale_data;
@@ -127,6 +114,17 @@ void saveConfig() {
   File configFile = LittleFS.open("/config.json", "w");
   serializeJson(doc, configFile);
   configFile.close();
+  resetDisplay();
+  lcd.println("Config");
+  lcd.println("saved");
+  lcd.display();
+  countDown(2000);
+  resetDisplay();
+  lcd.println("Resetting");
+  lcd.println("Device");
+  lcd.display();
+  countDown(2000);
+  ESP.reset();
 }
 
 void countDown(int millis) {
@@ -182,19 +180,8 @@ void calibrateScale() {
   lcd.display();
   countDown(2000);
   scale.set_scale(scale_data.calibration);
-  saveConfig();
-  resetDisplay();
-  lcd.println("Config");
-  lcd.println("saved");
-  lcd.display();
-  countDown(2000);
-  resetDisplay();
-  lcd.println("Resetting");
-  lcd.println("Device");
-  lcd.display();
-  countDown(2000);
+  scale_data.saveFlag = true;
   scale_data.calFlag = false;
-  ESP.reset();
 }
 
 void loadConfig() {
@@ -208,7 +195,7 @@ void loadConfig() {
     delay(4000);
     return;
   }
-  StaticJsonDocument<64> doc;
+  StaticJsonDocument<96> doc;
   deserializeJson(doc, configFile);
   scale_data.calibration = doc["calibration"];
   scale_data.offset = doc["offset"];
@@ -302,14 +289,12 @@ void updateDisplay() {
   showWiFiStatus();
   lcd.display();
 }
-#endif
 
 /**********************************************************************/
 /*!
   SERVER SECTION
 */
 /**********************************************************************/
-#ifdef SERVER
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 
@@ -333,6 +318,7 @@ void startServer() {
 
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale.tare(2);
+    scale_data.saveFlag = true;
     request->send(200);
   });
 
@@ -341,8 +327,8 @@ void startServer() {
       scale_data.calFlag = true;
       const char *weight = request->getParam("known_weight", true)->value().c_str();
       scale_data.knownWeight = atoi(weight);
-      request->send(200);
       request->redirect("/");
+      request->send(200);
     } else {
       request->send(500);
     }
@@ -352,9 +338,9 @@ void startServer() {
     if (request->hasParam("spool", true)) {
       const char *value = request->getParam("spool", true)->value().c_str();
       scale_data.spool_weight = atoi(value);
-      saveConfig(); 
-      request->send(200);
+      scale_data.saveFlag = true;
       request->redirect("/");
+      request->send(200);
     } else {
       request->send(500);
     }
@@ -370,29 +356,32 @@ void startServer() {
   server.begin();
 }
 
+
+double round2(double value) {
+   return (int)(value * 100 + 0.5) / 100.0;
+}
+
+
 void updateWeb() {
-  StaticJsonDocument<64> doc;
-  doc["reading"] = scale_data.filament_remaining;
-  doc["raw_weight"] = scale_data.weight;
-  doc["spool_weight"] = scale_data.spool_weight;
+  StaticJsonDocument<96> doc;
+  doc["reading"] = round2(scale_data.filament_remaining);
+  doc["raw_weight"] = round2(scale_data.weight);
+  doc["spool_weight"] = round2(scale_data.spool_weight);
+  doc["calibration_value"] = round2(scale_data.calibration);
+  doc["offset"] = scale_data.offset;
   String json;
   serializeJson(doc, json);
-  events.send("ping", NULL, millis());
   events.send(json.c_str(), "new_readings", millis());
-  json = String();
 }
-#endif
 /**********************************************************************/
 /*!
   END SERVER SECTION
 */
 /**********************************************************************/
 
-#ifdef OTA
 void startOTA() {
   // resetDisplay();
   ArduinoOTA.onStart([]() {
-    updating = true;
     // events.close();
     // server.end();
     resetDisplay();
@@ -403,7 +392,6 @@ void startOTA() {
     resetDisplay();
     lcd.println("Success");
     lcd.display();
-    updating = false;
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     // resetDisplay();
@@ -417,7 +405,6 @@ void startOTA() {
     // lcd.display();
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    updating = false;
     lcd.printf("Error[%u]: ", error);
     lcd.display();
     if (error == OTA_AUTH_ERROR)
@@ -433,7 +420,6 @@ void startOTA() {
   });
   ArduinoOTA.begin();
 }
-#endif
 
 void initDisplay() {
   if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -503,50 +489,36 @@ void setup() {
   Wire.begin(SDA, SCL); // start i2c interface
   initDisplay();
   setupWiFi();
-
-  #ifdef OTA
-    startOTA();
-  #endif
-
-  #ifdef SERVER
-    startServer();
-  #endif
-
-  #ifdef FILAMENT_SCALE
-    scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-    loadConfig();
-  #endif
+  startOTA();
+  startServer();
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  loadConfig();
 }
 
 void loop() {
-  #ifdef OTA
-    ArduinoOTA.handle();
-  #endif
+  ArduinoOTA.handle();
 
-  if (!updating){
-    #ifdef SERVER
-        if (sendEvents.isReady()) {
-          sendEvents.run();
-        }
-    #endif
-
-    #ifdef FILAMENT_SCALE
-        if (scale_data.calFlag) {
-    #ifdef SERVER
-          server.end();
-    #endif
-          calibrateScale();
-    #ifdef SERVER
-          startServer();
-    #endif
-        }
-        if (getScaleData.isReady()) {
-          getScaleData.run();
-        }
-        if (updatedisplay.isReady()) {
-          updatedisplay.run();
-        }
-    #endif
+  if (sendEvents.isReady()) {
+    sendEvents.run();
   }
+
+  if(scale_data.saveFlag){
+    server.end();
+    saveConfig();
+  }
+
+  if (scale_data.calFlag) {
+    server.end();
+    calibrateScale();
+  }
+
+  if (getScaleData.isReady()) {
+    getScaleData.run();
+  }
+
+  if (updatedisplay.isReady()) {
+    updatedisplay.run();
+  }
+
   yield();
 }
