@@ -1,6 +1,26 @@
 // Get current sensor readings when the page loads  
 window.addEventListener('load', getReadings);
 
+// calibration dialog
+// const showCalButton = document.getElementById("showCalDialog");
+// const calDialog = document.getElementById("calDialog");
+// const calConfimButton = document.getElementById("confirmBtn");
+// const calCancel = document.getElementById('calCancel');
+
+// calCancel.addEventListener('click', ()=>{
+//   calDialog.close();
+// })
+// showCalButton.addEventListener('click', () => {
+//   calDialog.showModal();
+// });
+
+
+// calConfimButton.addEventListener('click', () =>{
+//   const calForm = document.getElementById('calForm');
+//   const calWeight = calForm.calNumber.value;
+//   startCalibration(calWeight);
+//   calDialog.close();
+// })
 
 // Function to get current readings on the webpage when it loads for the first time
 function getReadings(){
@@ -18,11 +38,15 @@ function getReadings(){
 }
 
 
-function startCalibration(){
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/calibrate?known_weight=100", true);
-  xhr.send();
-}
+// function startCalibration(calWeight){
+//   var xhr = new XMLHttpRequest();
+//   // let calWeight = document.getElementById("calWeight").value;
+//   // let calWeight = 100;
+//   // console.log("calibrating scale");
+//   // console.log(calWeight);
+//   xhr.open("POST", "/calibrate?known_weight=" + calWeight, false);
+//   xhr.send();
+// }
 
 
 let tareScale = () =>{
@@ -98,7 +122,6 @@ if (!!window.EventSource) {
   }, false);
   
   source.addEventListener('new_readings', function(e) {
-    console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
     gaugeFilament.value = myObj.reading;
