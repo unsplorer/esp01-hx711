@@ -380,12 +380,11 @@ void updateWeb() {
 /**********************************************************************/
 
 void startOTA() {
-  // resetDisplay();
   ArduinoOTA.onStart([]() {
     // events.close();
     // server.end();
     resetDisplay();
-    lcd.println("Start");
+    lcd.println("Starting Update");
     lcd.display();
   });
   ArduinoOTA.onEnd([]() {
@@ -394,19 +393,19 @@ void startOTA() {
     lcd.display();
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    // resetDisplay();
-    // char progressPercent[16];
-    // sprintf(progressPercent,"%u%%",(progress / (total / 100)));
-    // lcd.println("Updating");
-    // lcd.setCursor(0, 16);
-    // lcd.print("Progress:");
-    // lcd.setCursor(0,48);
-    // justifyRight(progressPercent);
-    // lcd.display();
+    resetDisplay();
+    char progressPercent[16];
+    sprintf(progressPercent,"%u%%",(progress / (total / 100)));
+    lcd.println("Updating");
+    lcd.setCursor(0, 16);
+    lcd.print("Progress:");
+    lcd.setCursor(0,48);
+    justifyRight(progressPercent);
+    lcd.display();
   });
   ArduinoOTA.onError([](ota_error_t error) {
+    resetDisplay();
     lcd.printf("Error[%u]: ", error);
-    lcd.display();
     if (error == OTA_AUTH_ERROR)
       lcd.println("Auth Failed");
     else if (error == OTA_BEGIN_ERROR)
@@ -417,6 +416,7 @@ void startOTA() {
       lcd.println("Receive Failed");
     else if (error == OTA_END_ERROR)
       lcd.println("End Failed");
+    lcd.display();
   });
   ArduinoOTA.begin();
 }
