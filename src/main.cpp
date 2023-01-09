@@ -7,7 +7,6 @@
 #include <HX711.h>
 #include <Adafruit_SSD1306.h>
 #include "task.h"
-
 // #define spool_weight 241
 // #define ROLLER_WEIGHT 46
 // spool weight with rollers = 289g
@@ -28,7 +27,7 @@
 #define LOADCELL_SCK_PIN D6
 #endif
 
-
+void resetDisplay();
 void loadConfig();
 void saveConfig();
 void updateScale();
@@ -36,13 +35,24 @@ void calibrateScale(int calibrationWeight);
 void countDown(int millis);
 void showWeight();
 void startOTA();
-void tareScale();
 void startServer();
 void setup();
 void updateWeb();
 void updateDisplay();
 void justifyRight(const char *text);
 
+// Used to hold all data pertaining to scale
+typedef struct scaleData {
+  float weight = 0;
+  float calibration = 0;
+  float offset = 0;
+  float spool_weight = 0;
+  float filament_remaining = 0;
+  bool calFlag = false;
+  bool saveFlag = false;
+  int knownWeight = 0;
+} scaleData_t;
+scaleData_t scale_data;
 
 /**********************************************************************/
 /*!
@@ -286,19 +296,6 @@ void countDown(int millis) {
 
 HX711 scale; // create hx711 object
 Task getScaleData = Task(0, 2500, &updateScale);
-
-// Used to hold all data pertaining to scale
-typedef struct scaleData {
-  float weight = 0;
-  float calibration = 0;
-  float offset = 0;
-  float spool_weight = 0;
-  float filament_remaining = 0;
-  bool calFlag = false;
-  bool saveFlag = false;
-  int knownWeight = 0;
-} scaleData_t;
-scaleData_t scale_data;
 
 
 /**********************************************************************/
