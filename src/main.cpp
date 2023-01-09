@@ -6,10 +6,10 @@
 #include <Wire.h>
 #include <HX711.h>
 #include <Adafruit_SSD1306.h>
-
+#include "task.h"
 
 // #define spool_weight 241
-#define ROLLER_WEIGHT 46
+// #define ROLLER_WEIGHT 46
 // spool weight with rollers = 289g
 
 // ESP01 build pinouts
@@ -29,12 +29,10 @@
 #endif
 
 
-
-// prototypes
 void loadConfig();
 void saveConfig();
 void updateScale();
-void calibrateScale();
+void calibrateScale(int calibrationWeight);
 void countDown(int millis);
 void showWeight();
 void startOTA();
@@ -46,11 +44,18 @@ void updateDisplay();
 void justifyRight(const char *text);
 
 
+/**********************************************************************/
+/*!
+    DISPLAY SECTION START
+*/
+/**********************************************************************/
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Task updatedisplay = Task(0, 2500, &updateDisplay);
+
 
 // 'splash_logo', 128x64px
 const unsigned char splash_logo [] PROGMEM = {
@@ -137,69 +142,110 @@ public:
     this->interval = interval;
     this->_actualTask_ = func;
   }
-  void run() {
-    this->lastRun = millis();
-    this->_actualTask_();
-  }
-  bool isReady() {
-    return ((millis() - this->lastRun) > this->interval) ? true : false;
-  }
-};
+}
 
+
+/**********************************************************************/
+/*!
+  @brief  Clear display and set cursor to top left.
+*/
+/**********************************************************************/
 void resetDisplay() {
   lcd.clearDisplay();
   lcd.setCursor(0, 0);
 }
 
 
-HX711 scale; // create hx711 object
-Task updatedisplay = Task(0, 2500, &updateDisplay);
-Task getScaleData = Task(0, 2500, &updateScale);
-typedef struct scaleData {
-  float weight = 0;
-  float calibration = 0;
-  float offset = 0;
-  float spool_weight = 0;
-  float filament_remaining = 0;
-  bool calFlag = false;
-  bool saveFlag = false;
-  int knownWeight = 0;
-} scaleData_t;
-scaleData_t scale_data;
+/**********************************************************************/
+/*!
+  @brief  Output right justified text
+  @param text input text
+*/
+/**********************************************************************/
+void justifyRight(const char* text) {
+  int16_t x1, y1;
+  uint16_t w, h;
 
-void updateScale() {
-  if (scale.is_ready()) {
-    scale_data.weight = (scale.get_units(2));
-    scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
-    // if (scale_data.filament_remaining < 0) {
-    //   scale_data.filament_remaining = 0;
-    // }
-    scale_data.calibration = scale.get_scale();
-    scale_data.offset = scale.get_offset();
-  }
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w), lcd.getCursorY());
+  lcd.println(text);
 }
 
-void saveConfig() {
-  StaticJsonDocument<64> doc;
-  doc["calibration"] = scale.get_scale();
-  doc["offset"] = scale.get_offset();
-  doc["spool_weight"] = scale_data.spool_weight;
-  File configFile = LittleFS.open("/config.json", "w");
-  serializeJson(doc, configFile);
-  configFile.close();
-  resetDisplay();
-  lcd.println("Config");
-  lcd.println("saved");
-  lcd.display();
-  countDown(2000);
-  resetDisplay();
-  lcd.println("Resetting");
-  lcd.println("Device");
-  lcd.display();
-  countDown(2000);
-  ESP.reset();
+
+/**********************************************************************/
+/*!
+  @brief  Output centered text
+  @param text input text
+*/
+/**********************************************************************/
+void centerText(const char* text) {
+  int16_t x1, y1;
+  uint16_t w, h;
+
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w) / 2, lcd.getCursorY());
+  lcd.println(text);
 }
 
+
+/**********************************************************************/
+/*!
+  @brief  Updates the weight section on Display
+*/
+/**********************************************************************/
+void showWeight() {
+  
+  char filamentRemaining[8];
+  sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
+
+  resetDisplay();
+  lcd.setTextSize(1);
+  centerText("Filament Remaining\n");
+  lcd.setTextSize(3);
+  centerText(filamentRemaining);
+  lcd.setTextSize(2);
+}
+
+
+/**********************************************************************/
+/*!
+  @brief  Updates WiFi status section on Display
+*/
+/**********************************************************************/
+void showWiFiStatus(){
+  char ip[24] = {};
+  sprintf(ip,"%s",WiFi.localIP().toString().c_str());
+  lcd.setTextSize(1);
+  lcd.setCursor(0, 48);
+  lcd.print("Hostname:");
+  justifyRight(WiFi.hostname().c_str());
+  lcd.setCursor(0, 56);
+  lcd.print("IP:");
+  justifyRight(ip);
+  lcd.setTextSize(2);
+}
+
+
+/**********************************************************************/
+/*!
+  @brief  Main display routine, shows current filament weight,
+  WiFi hostname, and IP address
+*/
+/**********************************************************************/
+void updateDisplay() {
+  resetDisplay();
+  showWeight();
+  showWiFiStatus();
+  lcd.display();
+}
+
+
+/**********************************************************************/
+/*!
+  @brief  display countdown and wait in seconds on lower right display
+  @param millis time in milliseconds to countdown
+*/
+/**********************************************************************/
 void countDown(int millis) {
   int secondsLeft = millis / 1000;
   while (secondsLeft) {
@@ -225,40 +271,46 @@ void countDown(int millis) {
   lcd.display();
 }
 
-void calibrateScale() {
-  if (scale_data.knownWeight == 0) {
-    resetDisplay();
-    lcd.println("Cal Failed");
-    lcd.println("Weight\nUnKnown\n");
-    lcd.display();
-    scale_data.calFlag = false;
-    countDown(4000);
-    // ESP.reset();
-    return;
-  }
-  resetDisplay();
-  lcd.print("Calibrating");
-  lcd.display();
-  countDown(2000);
-  scale.set_scale();
-  scale.tare();
-  resetDisplay();
-  lcd.printf("Place %dg\nOn Scale", scale_data.knownWeight);
-  lcd.display();
-  countDown(5000);
-  scale_data.calibration = scale.get_units(2) / scale_data.knownWeight;
-  resetDisplay();
-  lcd.println("cal weight");
-  lcd.printf("%f\n", scale_data.calibration);
-  lcd.display();
-  countDown(2000);
-  scale.set_scale(scale_data.calibration);
-  scale_data.saveFlag = true;
-  scale_data.calFlag = false;
-}
 
+/**********************************************************************/
+/*!
+    DISPLAY SECTION END
+*/
+/**********************************************************************/
+
+/**********************************************************************/
+/*!
+    SCALE SECTION START
+*/
+/**********************************************************************/
+
+HX711 scale; // create hx711 object
+Task getScaleData = Task(0, 2500, &updateScale);
+
+// Used to hold all data pertaining to scale
+typedef struct scaleData {
+  float weight = 0;
+  float calibration = 0;
+  float offset = 0;
+  float spool_weight = 0;
+  float filament_remaining = 0;
+  bool calFlag = false;
+  bool saveFlag = false;
+  int knownWeight = 0;
+} scaleData_t;
+scaleData_t scale_data;
+
+
+/**********************************************************************/
+/*!
+    @brief Loads calibration values from persistent storage. Display 
+    a warning if no calibration values have been stored yet.
+*/
+/**********************************************************************/
 void loadConfig() {
   File configFile = LittleFS.open("/config.json", "r");
+
+  // file doesn't exist, show warning.
   if (!configFile) {
     resetDisplay();
     lcd.println("Failed");
@@ -268,6 +320,7 @@ void loadConfig() {
     delay(4000);
     return;
   }
+
   StaticJsonDocument<96> doc;
   deserializeJson(doc, configFile);
   scale_data.calibration = doc["calibration"];
@@ -287,81 +340,96 @@ void loadConfig() {
   configFile.close();
 }
 
+
 /**********************************************************************/
 /*!
-  @brief  Output right justified text
-  @param text input text
+    @brief Helper function that saves scale_data to persistent storage
+    to manage data loss in between reboots / powerdown. Function is 
+    triggered by saveFlag in scale_data struct. Save happens in main loop
+    then triggers a device reset.
 */
 /**********************************************************************/
-void justifyRight(const char* text) {
-  int16_t x1, y1;
-  uint16_t w, h;
-
-  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
-  lcd.setCursor((SCREEN_WIDTH - w), lcd.getCursorY());
-  lcd.println(text);
-}
-/**********************************************************************/
-/*!
-  @brief  Output centered text
-  @param text input text
-*/
-/**********************************************************************/
-void centerText(const char* text) {
-  int16_t x1, y1;
-  uint16_t w, h;
-
-  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
-  lcd.setCursor((SCREEN_WIDTH - w) / 2, lcd.getCursorY());
-  lcd.println(text);
-}
-/**********************************************************************/
-/*!
-  @brief  Update weight on Display
-*/
-/**********************************************************************/
-void showWeight() {
-  
-  char filamentRemaining[8];
-  sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
-
+void saveConfig() {
+  StaticJsonDocument<64> doc;
+  doc["calibration"] = scale.get_scale();
+  doc["offset"] = scale.get_offset();
+  doc["spool_weight"] = scale_data.spool_weight;
+  File configFile = LittleFS.open("/config.json", "w");
+  serializeJson(doc, configFile);
+  configFile.close();
   resetDisplay();
-  lcd.setTextSize(1);
-  centerText("Filament Remaining\n");
-  lcd.setTextSize(3);
-  centerText(filamentRemaining);
-  lcd.setTextSize(2);
-}
-
-/**********************************************************************/
-/*!
-  @brief  Update WiFi status on Display
-*/
-/**********************************************************************/
-void showWiFiStatus(){
-  char ip[24] = {};
-  sprintf(ip,"%s",WiFi.localIP().toString().c_str());
-  lcd.setTextSize(1);
-  lcd.setCursor(0, 48);
-  lcd.print("Hostname:");
-  justifyRight(WiFi.hostname().c_str());
-  lcd.setCursor(0, 56);
-  lcd.print("IP:");
-  justifyRight(ip);
-  lcd.setTextSize(2);
-}
-
-/**********************************************************************/
-/*!
-  @brief  Update display
-*/
-/**********************************************************************/
-void updateDisplay() {
-  resetDisplay();
-  showWeight();
-  showWiFiStatus();
+  lcd.println("Config");
+  lcd.println("saved");
   lcd.display();
+  countDown(2000);
+  resetDisplay();
+  lcd.println("Resetting");
+  lcd.println("Device");
+  lcd.display();
+  countDown(2000);
+  ESP.reset();
 }
+
+
+/**********************************************************************/
+/*!
+    @brief Calibrates the scale and sets save flag
+    @param calibrationWeight "known weight" passed in to calibrate the 
+    scale against
+*/
+/**********************************************************************/
+void calibrateScale(int calibrationWeight) {
+  // Impossible to calibrate against negative or no weight
+  // reset the device after displaying warning.
+  if (calibrationWeight <= 0) {
+    resetDisplay();
+    lcd.println("Cal Failed");
+    lcd.println("Weight\nUnKnown\n");
+    lcd.display();
+    scale_data.calFlag = false;
+    countDown(4000);
+    ESP.reset();
+    return;
+  }
+
+  resetDisplay();
+  lcd.print("Calibrating");
+  lcd.display();
+  countDown(2000);
+  scale.set_scale();
+  scale.tare();
+  resetDisplay();
+  lcd.printf("Place %dg\nOn Scale", calibrationWeight);
+  lcd.display();
+  countDown(5000);
+  scale_data.calibration = scale.get_units(2) / calibrationWeight;
+  resetDisplay();
+  lcd.println("cal weight");
+  lcd.printf("%f\n", scale_data.calibration);
+  lcd.display();
+  countDown(2000);
+  scale.set_scale(scale_data.calibration);
+  // save the new calibration data, then reset device
+  scale_data.saveFlag = true;
+  scale_data.calFlag = false;
+}
+
+
+/**********************************************************************/
+/*!
+    @brief queries the scale and gets current weight, calcs filament remaning
+    from tare / empty spool weight.
+*/
+/**********************************************************************/
+void updateScale() {
+  if (scale.is_ready()) {
+    scale_data.weight = (scale.get_units(2));
+    scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
+    scale_data.calibration = scale.get_scale();
+    scale_data.offset = scale.get_offset();
+  }
+}
+
 
 /**********************************************************************/
 /*!
@@ -373,6 +441,12 @@ AsyncEventSource events("/events");
 
 Task sendEvents(0, 1250, &updateWeb);
 
+
+/**********************************************************************/
+/*!
+    @brief Initializes the async webserver and sets up routing
+*/
+/**********************************************************************/
 void startServer() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html");
@@ -430,11 +504,22 @@ void startServer() {
 }
 
 
+/**********************************************************************/
+/*!
+    @brief Helper function to round floats down to 2 decimals
+    @param value Number to round
+*/
+/**********************************************************************/
 double round2(double value) {
    return (int)(value * 100 + 0.5) / 100.0;
 }
 
 
+/**********************************************************************/
+/*!
+    @brief Server side event backend, pushes data to the frontend webpage
+*/
+/**********************************************************************/
 void updateWeb() {
   StaticJsonDocument<96> doc;
   doc["reading"] = round2(scale_data.filament_remaining);
@@ -446,11 +531,15 @@ void updateWeb() {
   serializeJson(doc, json);
   events.send(json.c_str(), "new_readings", millis());
 }
+
+
 /**********************************************************************/
 /*!
   END SERVER SECTION
 */
 /**********************************************************************/
+
+
 
 void startOTA() {
   ArduinoOTA.onStart([]() {
@@ -494,25 +583,6 @@ void startOTA() {
   ArduinoOTA.begin();
 }
 
-void initDisplay() {
-  if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    resetDisplay();
-    lcd.setTextSize(2);
-    lcd.setTextColor(SSD1306_WHITE);
-    lcd.cp437(true);
-
-    // Display test
-    // lcd.invertDisplay(true);
-    // lcd.display();
-    // delay(1000);
-    // lcd.invertDisplay(false);
-    // lcd.display();
-    // delay(1000);
-    lcd.drawBitmap(0,0,splash_logo,128,64,WHITE);
-    lcd.display();
-    delay(2000);
-  }
-}
 
 void setupWiFi() {
   int retry = 0, config_done = 0;
@@ -560,6 +630,7 @@ void setupWiFi() {
   }
 }
 
+
 void setup() {
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
@@ -570,6 +641,7 @@ void setup() {
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   loadConfig();
 }
+
 
 void loop() {
   ArduinoOTA.handle();
@@ -585,7 +657,7 @@ void loop() {
 
   if (scale_data.calFlag) {
     server.end();
-    calibrateScale();
+    calibrateScale(scale_data.knownWeight);
   }
 
   if (getScaleData.isReady()) {
