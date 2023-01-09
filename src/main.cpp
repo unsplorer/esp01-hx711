@@ -628,6 +628,10 @@ void setupWiFi() {
 }
 
 
+/**
+ * @brief Runs once before loop, then passes to control to loop()
+ * 
+ */
 void setup() {
   LittleFS.begin();
   Wire.begin(SDA, SCL); // start i2c interface
@@ -640,6 +644,10 @@ void setup() {
 }
 
 
+/**
+ * @brief Main routine of the program, loops forever.
+ * 
+ */
 void loop() {
   ArduinoOTA.handle();
 
