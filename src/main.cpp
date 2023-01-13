@@ -544,15 +544,24 @@ double round2(double value) {
 */
 /**********************************************************************/
 void updateWeb() {
-  StaticJsonDocument<96> doc;
-  doc["reading"] = round2(scale_data.filament_remaining);
-  doc["raw_weight"] = round2(scale_data.weight);
-  doc["spool_weight"] = round2(scale_data.spool_weight);
-  doc["calibration_value"] = round2(scale_data.calibration);
-  doc["offset"] = scale_data.offset;
-  String json;
-  serializeJson(doc, json);
-  events.send(json.c_str(), "new_readings", millis());
+  StaticJsonDocument<512> doc;
+  JsonObject device = doc.createNestedObject("device");
+  JsonObject scale = doc.createNestedObject("scale");
+
+  device["ssid"] = WiFi.SSID();
+  device["rssi"] = WiFi.RSSI();
+  device["uptime"] = millis();
+
+  scale["filament_remaining"] = round2(scale_data.filament_remaining);
+  scale["spool_weight"] = round2(scale_data.spool_weight);
+  scale["calibration_value"] = round2(scale_data.calibration);
+  scale["offset"] = scale_data.offset;
+
+  char buffer[512];
+  serializeJson(doc,buffer);
+  // String json;
+  // serializeJson(doc, json);
+  events.send(buffer, "report", millis());
 }
 
 
@@ -566,8 +575,6 @@ void updateWeb() {
 
 void startOTA() {
   ArduinoOTA.onStart([]() {
-    // events.close();
-    // server.end();
     resetDisplay();
     lcd.println("Starting Update");
     lcd.display();
