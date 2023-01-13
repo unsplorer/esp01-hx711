@@ -7,13 +7,12 @@ function getReadings(){
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      let myObj = JSON.parse(this.responseText);
-      console.log(myObj);
-      let weight = myObj.reading;   
-      gaugeFilament.value = weight;
+      let report = JSON.parse(this.responseText);
+      gaugeFilament.value = report["scale"].filament_remaining;
+      wifiIndicator.innerText = report["device"].rssi + " dBm";
     }
   }; 
-  xhr.open("GET", "/readings", true);
+  xhr.open("GET", "/api", true);
   xhr.send();
 }
 
@@ -90,12 +89,10 @@ if (!!window.EventSource) {
   }, false);
   
   source.addEventListener('message', function(e) {
-    console.log("message", e.data);
   }, false);
   
   source.addEventListener('report', function(e) {
-    var report = JSON.parse(e.data);
-    console.log(report);
+    let report = JSON.parse(e.data);
     gaugeFilament.value = report["scale"].filament_remaining;
     wifiIndicator.innerText = report["device"].rssi + " dBm";
   }, false);

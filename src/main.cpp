@@ -40,6 +40,7 @@ void setup();
 void updateWeb();
 void updateDisplay();
 void justifyRight(const char *text);
+double round2(double value);
 
 // Used to hold all data pertaining to scale
 typedef struct scaleData {
@@ -450,14 +451,6 @@ void startServer() {
 
   server.serveStatic("/", LittleFS, "/");
 
-  server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request) {
-    StaticJsonDocument<64> doc;
-    doc["reading"] = scale_data.filament_remaining;
-    String json;
-    serializeJson(doc, json);
-    request->send(200, "application/json", json);
-  });
-
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale.tare(2);
     scale_data.offset = scale.get_offset();
@@ -487,6 +480,25 @@ void startServer() {
     } else {
       request->send(500);
     }
+  });
+
+  server.on("/api", HTTP_GET, [](AsyncWebServerRequest *request) {
+    StaticJsonDocument<512> doc;
+    JsonObject device = doc.createNestedObject("device");
+    JsonObject scale = doc.createNestedObject("scale");
+
+    device["ssid"] = WiFi.SSID();
+    device["rssi"] = WiFi.RSSI();
+    device["uptime"] = millis();
+
+    scale["filament_remaining"] = round2(scale_data.filament_remaining);
+    scale["spool_weight"] = round2(scale_data.spool_weight);
+    scale["calibration_value"] = round2(scale_data.calibration);
+    scale["offset"] = scale_data.offset;
+
+    String json;
+    serializeJson(doc, json);
+    request->send(200, "application/json", json);
   });
 
   server.on("/api", HTTP_POST, [](AsyncWebServerRequest *request) {
