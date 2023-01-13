@@ -25,34 +25,62 @@
   <nav class="navbar navbar-dark bg-dark">
     <div class="bg-dark container-fluid">
       <div class="navbar-text fs-4 text-light">
-        Filament Dashboard
+        Ender 3 Filament Dashboard
       </div>
-      
-      <div class="dropdown">
+      <!-- settings button -->
+      <!-- <div class="dropdown">
         <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton" data-mdb-toggle="dropdown"
         aria-expanded="false">
         Settings
-      </button>
+        </button>
       
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <form class="form row-cols-1" action="/spool" method="post">
-          <input type="number" class="text-center rounded" name="spool" id="spool" placeholder="Empty Spool Weight">
-          <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
-        </form>
-        <form class="form row-cols-1" action="/calibrate" method="post">
-          <input type="number" class="text-center rounded" name="known_weight" id="known_weight" placeholder="Known Weight eg.. 100g">
-          <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
-          <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
-        </form>
-      </div>
-    </div>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <form class="form row-cols-1" action="/spool" method="post">
+            <input type="number" class="text-center rounded" name="spool" id="spool" placeholder="Empty Spool Weight">
+            <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
+          </form>
+          <form class="form row-cols-1" action="/calibrate" method="post">
+            <input type="number" class="text-center rounded" name="known_weight" id="known_weight" placeholder="Known Weight eg.. 100g">
+            <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
+            <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
+          </form>
+        </div>
+      </div> -->
 
     </div>
   </nav>
   <!-- MAIN CONTENT -->
   <div class="card-grid mt-5">
     <div class="card py-3 px-5 mx-auto">
-      <p class="card-title">Ender 3 Filament Remaining</p>
+      <div class="row">
+        <div class="col-1 mx-n4">
+          <!-- settings button -->
+          <div class="dropdown">
+            <i class="dropdown-toggle fa-solid fa-1x fa-tools" type="button" id="dropdownMenuButton" data-mdb-toggle="dropdown" aria-expanded="false">
+              <!-- <i class="fa-solid fa-gear">
+              </i> -->
+            </i>
+          
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <form class="form row-cols-1" action="/spool" method="post">
+                <input type="number" class="text-center rounded" name="spool" id="spool" placeholder="Empty Spool Weight">
+                <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
+              </form>
+              <form class="form row-cols-1" action="/calibrate" method="post">
+                <input type="number" class="text-center rounded" name="known_weight" id="known_weight" placeholder="Known Weight eg.. 100g">
+                <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
+                <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
+              </form>
+            </div>
+
+          </div>
+          <!-- settings button end -->
+        </div>
+        <!-- <div class="col">
+          <p class="card-title">Ender 3</p>
+        </div> -->
+
+      </div>
       <canvas id="gauge-filament"></canvas>
     </div>
   </div>
