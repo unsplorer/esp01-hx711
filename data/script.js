@@ -56,7 +56,7 @@ let tareScale = () =>{
 }
 
 
-// Create Humidity Gauge
+// Create Filament Gauge
 var gaugeFilament = new RadialGauge({
   renderTo: 'gauge-filament',
   width: 300,
