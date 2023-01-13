@@ -71,6 +71,14 @@
                 <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
                 <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
               </form>
+              
+              <form class="form row-cols-1" action="/api" method="post">
+                <span class="text-center">Restore Settings</span>
+                <input type="number" class="text-center rounded" name="offset" id="offset" placeholder="Tare offset">
+                <input type="number" step="0.01" class="text-center rounded" name="calvalue" id="calvalue" placeholder="Calibration value">
+                <input type="number" class="text-center rounded" name="spool_weight" id="spool_weight" placeholder="Empty Spool Weight">
+                <button type="submit" class="btn btn-danger" value="submit">Submit</button>
+              </form>
             </div>
 
           </div>
@@ -88,3 +96,9 @@
   <script src="script.js"></script>
 </body>
 </html>
+<!-- call values -->
+  <!-- calibration_value: 450.84
+  offset: 67912
+  raw_weight: 1202.7
+  reading: 913.7
+  spool_weight: 289 -->

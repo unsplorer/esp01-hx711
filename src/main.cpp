@@ -347,8 +347,8 @@ void loadConfig() {
 /**********************************************************************/
 void saveConfig() {
   StaticJsonDocument<64> doc;
-  doc["calibration"] = scale.get_scale();
-  doc["offset"] = scale.get_offset();
+  doc["calibration"] = scale_data.calibration;
+  doc["offset"] = scale_data.offset;
   doc["spool_weight"] = scale_data.spool_weight;
   File configFile = LittleFS.open("/config.json", "w");
   serializeJson(doc, configFile);
@@ -421,8 +421,8 @@ void updateScale() {
   if (scale.is_ready()) {
     scale_data.weight = (scale.get_units(2));
     scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
-    scale_data.calibration = scale.get_scale();
-    scale_data.offset = scale.get_offset();
+    // scale_data.calibration = scale.get_scale();
+    // scale_data.offset = scale.get_offset();
   }
 }
 
@@ -456,11 +456,11 @@ void startServer() {
     String json;
     serializeJson(doc, json);
     request->send(200, "application/json", json);
-    json = String();
   });
 
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale.tare(2);
+    scale_data.offset = scale.get_offset();
     scale_data.saveFlag = true;
     request->send(200);
   });
@@ -487,6 +487,33 @@ void startServer() {
     } else {
       request->send(500);
     }
+  });
+
+  server.on("/api", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("offset", true)) {
+      const char *offset = request->getParam("offset", true)->value().c_str();
+      if (atoi(offset)){
+        scale_data.offset = atoi(offset);
+        scale_data.saveFlag = true;
+      }
+    } 
+    if (request->hasParam("calvalue", true)){
+      const char *calvalue = request->getParam("calvalue", true)->value().c_str();
+      if (atof(calvalue)){
+        scale_data.calibration = atof(calvalue);
+        scale_data.saveFlag = true;
+      }
+    } 
+    if (request->hasParam("spool_weight", true)){
+      const char *spool_weight = request->getParam("spool_weight", true)->value().c_str();
+      if (atoi(spool_weight)){
+        scale_data.spool_weight = atoi(spool_weight);
+        scale_data.saveFlag = true;
+      }
+    }
+    
+    request->redirect("/");
+    request->send(200);
   });
 
   server.addHandler(&events);
