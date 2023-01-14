@@ -6,7 +6,7 @@ import { createSignal, onCleanup } from "solid-js";
 
 const App: Component = () => {
   const [count, setCount] = createSignal(0);
-  const [rssi, setRssi] = createSignal(0);
+  const [rssi, setRssi] = createSignal();
 
   // event listener
   if (!!window.EventSource) {

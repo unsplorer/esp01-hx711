@@ -7,12 +7,12 @@ const Card = (props) => {
 
   return (
     <div class="rounded-3xl shadow-2xl px-12 py-6">
-        <div class="font-bold text-xl mb-2" id={props.id}>{props.title}</div>
+        <h1 class="font-bold text-xl mb-2" id={props.id}>{props.title}</h1>
         <Fila_Gauge value={props.filament}/>
-        <div class="flex flex-row justify-between items-center -mt-8 -mx-6">
+        <span class="flex justify-between items-center -mt-8 -mx-6">
           <Settings_Dropdown/>
           <WiFiSignal rssi={props.rssi}/>
-        </div>
+        </span>
     </div>
   );
 }
