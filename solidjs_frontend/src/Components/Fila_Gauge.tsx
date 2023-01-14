@@ -16,7 +16,7 @@ return (
         data-height="300"
         data-units="grams"
         data-title=""
-        data-value={props.filament}
+        data-value={props.value}
         data-min-value="0"
         data-max-value="1000"
         data-major-ticks="0,100,200,300,400,500,600,700,800,900,1000"

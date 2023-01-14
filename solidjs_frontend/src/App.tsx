@@ -1,11 +1,15 @@
 import type { Component } from 'solid-js';
 import Card from './Components/Card';
-import Fila_Gauge from './Components/Fila_Gauge';
 import Navbar from './Components/Navbar';
+import { createSignal, onCleanup } from "solid-js";
 
 const App: Component = () => {
-  var filament_remaining = 200;
-  let wifi;
+  const [count, setCount] = createSignal(0);
+	const interval = setInterval(
+		() => setCount(c => c + 10),
+		1000
+	);
+	onCleanup(() => clearInterval(interval));
   // event listener
   if (!!window.EventSource) {
     var source = new EventSource('/events');
@@ -25,14 +29,15 @@ const App: Component = () => {
     
     source.addEventListener('report', function(e) {
       let report = JSON.parse(e.data);
-      filament_remaining = report["scale"].filament_remaining;
+      setCount(report["scale"].filament_remaining);
     }, false);
   }
+  
   return (
     <main>
       <Navbar/>
       <div class='mt-6 flex items-center text-center justify-center'>
-        <Card title='Filament Remaining' filament={filament_remaining}/>
+        <Card title='Filament Remaining' filament={count()}/>
       </div>
     </main>
   )
