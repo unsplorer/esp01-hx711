@@ -5,3 +5,4 @@
 .vscode/launch.json
 .vscode/ipch
 src/secrets.h
+.solidjs_frontend/app/node_modules
