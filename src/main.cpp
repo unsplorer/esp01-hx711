@@ -3,9 +3,9 @@
 #include <ArduinoOTA.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266WiFi.h>
-// #include <Wire.h>
-// #include <HX711.h>
-// #include <Adafruit_SSD1306.h>
+#include <Wire.h>
+#include <HX711.h>
+#include <Adafruit_SSD1306.h>
 #include "task.h"
 // #define spool_weight 241
 // #define ROLLER_WEIGHT 46
@@ -27,6 +27,7 @@
 #define LOADCELL_SCK_PIN D6
 #endif
 
+void resetDisplay();
 void loadConfig();
 void saveConfig();
 void updateScale();
@@ -63,8 +64,8 @@ scaleData_t scale_data;
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
-// Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-// Task updatedisplay = Task(0, 2500, &updateDisplay);
+Adafruit_SSD1306 lcd(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Task updatedisplay = Task(0, 2500, &updateDisplay);
 
 
 // 'splash_logo', 128x64px
@@ -141,17 +142,17 @@ const unsigned char splash_logo [] PROGMEM = {
   @brief  Initializes the display and shows splash screen.
 */
 /**********************************************************************/
-// void initDisplay() {
-//   if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    
-    
-//     lcd.setTextColor(SSD1306_WHITE);
-//     lcd.cp437(true);
-//     lcd.drawBitmap(0,0,splash_logo,128,64,WHITE);
-    
-//     delay(2000);
-//   }
-// }
+void initDisplay() {
+  if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    resetDisplay();
+    lcd.setTextSize(2);
+    lcd.setTextColor(SSD1306_WHITE);
+    lcd.cp437(true);
+    lcd.drawBitmap(0,0,splash_logo,128,64,WHITE);
+    lcd.display();
+    delay(2000);
+  }
+}
 
 
 /**********************************************************************/
@@ -159,10 +160,10 @@ const unsigned char splash_logo [] PROGMEM = {
   @brief  Clear display and set cursor to top left.
 */
 /**********************************************************************/
-// void resetDisplay() {
-//   lcd.clearDisplay();
-//   lcd.setCursor(0, 0);
-// }
+void resetDisplay() {
+  lcd.clearDisplay();
+  lcd.setCursor(0, 0);
+}
 
 
 /**********************************************************************/
@@ -171,14 +172,14 @@ const unsigned char splash_logo [] PROGMEM = {
   @param text input text
 */
 /**********************************************************************/
-// void justifyRight(const char* text) {
-//   int16_t x1, y1;
-//   uint16_t w, h;
+void justifyRight(const char* text) {
+  int16_t x1, y1;
+  uint16_t w, h;
 
-//   lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
-//   lcd.setCursor((SCREEN_WIDTH - w), lcd.getCursorY());
-//   Serial.println(text);
-// }
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w), lcd.getCursorY());
+  lcd.println(text);
+}
 
 
 /**********************************************************************/
@@ -187,14 +188,14 @@ const unsigned char splash_logo [] PROGMEM = {
   @param text input text
 */
 /**********************************************************************/
-// void centerText(const char* text) {
-//   int16_t x1, y1;
-//   uint16_t w, h;
+void centerText(const char* text) {
+  int16_t x1, y1;
+  uint16_t w, h;
 
-//   lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
-//   lcd.setCursor((SCREEN_WIDTH - w) / 2, lcd.getCursorY());
-//   Serial.println(text);
-// }
+  lcd.getTextBounds(text, lcd.getCursorX(), lcd.getCursorY(), &x1, &y1, &w, &h);
+  lcd.setCursor((SCREEN_WIDTH - w) / 2, lcd.getCursorY());
+  lcd.println(text);
+}
 
 
 /**********************************************************************/
@@ -202,18 +203,18 @@ const unsigned char splash_logo [] PROGMEM = {
   @brief  Updates the weight section on Display
 */
 /**********************************************************************/
-// void showWeight() {
+void showWeight() {
   
-//   char filamentRemaining[8];
-//   sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
+  char filamentRemaining[8];
+  sprintf(filamentRemaining, "%.0fg\n",scale_data.filament_remaining);
 
-  
-  
-//   centerText("Filament Remaining\n");
-//   lcd.setTextSize(3);
-//   centerText(filamentRemaining);
-  
-// }
+  resetDisplay();
+  lcd.setTextSize(1);
+  centerText("Filament Remaining\n");
+  lcd.setTextSize(3);
+  centerText(filamentRemaining);
+  lcd.setTextSize(2);
+}
 
 
 /**********************************************************************/
@@ -221,18 +222,18 @@ const unsigned char splash_logo [] PROGMEM = {
   @brief  Updates WiFi status section on Display
 */
 /**********************************************************************/
-// void showWiFiStatus(){
-//   char ip[24] = {};
-//   sprintf(ip,"%s",WiFi.localIP().toString().c_str());
-//   // 
-//   // lcd.setCursor(0, 48);
-//   Serial.print("Hostname:");
-//   justifyRight(WiFi.hostname().c_str());
-//   // lcd.setCursor(0, 56);
-//   Serial.print("IP:");
-//   justifyRight(ip);
-  
-// }
+void showWiFiStatus(){
+  char ip[24] = {};
+  sprintf(ip,"%s",WiFi.localIP().toString().c_str());
+  lcd.setTextSize(1);
+  lcd.setCursor(0, 48);
+  lcd.print("Hostname:");
+  justifyRight(WiFi.hostname().c_str());
+  lcd.setCursor(0, 56);
+  lcd.print("IP:");
+  justifyRight(ip);
+  lcd.setTextSize(2);
+}
 
 
 /**********************************************************************/
@@ -241,12 +242,12 @@ const unsigned char splash_logo [] PROGMEM = {
   WiFi hostname, and IP address
 */
 /**********************************************************************/
-// void updateDisplay() {
-  
-//   showWeight();
-//   showWiFiStatus();
-  
-// }
+void updateDisplay() {
+  resetDisplay();
+  showWeight();
+  showWiFiStatus();
+  lcd.display();
+}
 
 
 /**********************************************************************/
@@ -256,28 +257,28 @@ const unsigned char splash_logo [] PROGMEM = {
 */
 /**********************************************************************/
 void countDown(int millis) {
-  // int secondsLeft = millis / 1000;
-  // while (secondsLeft) {
-  //   if (secondsLeft < 10) {
+  int secondsLeft = millis / 1000;
+  while (secondsLeft) {
+    if (secondsLeft < 10) {
       
-  //     lcd.setCursor(96, 48);
-  //     lcd.fillRect(96,48,SCREEN_WIDTH-96,SCREEN_HEIGHT-48,BLACK);
-      
-  //     lcd.setCursor(108, 48);
-  //   } else {
-  //     lcd.fillRect(96, 48, SCREEN_WIDTH - 96, SCREEN_HEIGHT - 48, BLACK);
-      
-  //     lcd.setCursor(96, 48);
-  //   }
-  //   lcd.print(secondsLeft);
+      lcd.setCursor(96, 48);
+      lcd.fillRect(96,48,SCREEN_WIDTH-96,SCREEN_HEIGHT-48,BLACK);
+      lcd.display();
+      lcd.setCursor(108, 48);
+    } else {
+      lcd.fillRect(96, 48, SCREEN_WIDTH - 96, SCREEN_HEIGHT - 48, BLACK);
+      lcd.display();
+      lcd.setCursor(96, 48);
+    }
+    lcd.print(secondsLeft);
 
-    
-  //   delay(1000);
-  //   secondsLeft--;
-  // }
-  // // lcd.setCursor(96, 48);
-  // // lcd.print("    ");
-  
+    lcd.display();
+    delay(1000);
+    secondsLeft--;
+  }
+  lcd.setCursor(96, 48);
+  lcd.print("    ");
+  lcd.display();
 }
 
 
@@ -293,8 +294,8 @@ void countDown(int millis) {
 */
 /**********************************************************************/
 
-// HX711 scale; // create hx711 object
-// Task getScaleData = Task(0, 2500, &updateScale);
+HX711 scale; // create hx711 object
+Task getScaleData = Task(0, 2500, &updateScale);
 
 
 /**********************************************************************/
@@ -308,11 +309,11 @@ void loadConfig() {
 
   // file doesn't exist, show warning.
   if (!configFile) {
-    
-    Serial.println("Failed");
-    Serial.println("to load");
-    Serial.println("config");
-    
+    resetDisplay();
+    lcd.println("Failed");
+    lcd.println("to load");
+    lcd.println("config");
+    lcd.display();
     delay(4000);
     return;
   }
@@ -322,17 +323,17 @@ void loadConfig() {
   scale_data.calibration = doc["calibration"];
   scale_data.offset = doc["offset"];
   scale_data.spool_weight = doc["spool_weight"];
-  // if (scale_data.offset) {
-  //   scale.set_offset(scale_data.offset);
-  // }
-  // if (scale_data.calibration) {
-  //   scale.set_scale(scale_data.calibration);
-  // }
-  
-  Serial.println("Loaded");
-  Serial.println("config");
-  
-  // countDown(2000);
+  if (scale_data.offset) {
+    scale.set_offset(scale_data.offset);
+  }
+  if (scale_data.calibration) {
+    scale.set_scale(scale_data.calibration);
+  }
+  resetDisplay();
+  lcd.println("Loaded");
+  lcd.println("config");
+  lcd.display();
+  countDown(2000);
   configFile.close();
 }
 
@@ -353,15 +354,15 @@ void saveConfig() {
   File configFile = LittleFS.open("/config.json", "w");
   serializeJson(doc, configFile);
   configFile.close();
-  
-  Serial.println("Config");
-  Serial.println("saved");
-  
+  resetDisplay();
+  lcd.println("Config");
+  lcd.println("saved");
+  lcd.display();
   countDown(2000);
-  
-  Serial.println("Resetting");
-  Serial.println("Device");
-  
+  resetDisplay();
+  lcd.println("Resetting");
+  lcd.println("Device");
+  lcd.display();
   countDown(2000);
   ESP.reset();
 }
@@ -374,41 +375,41 @@ void saveConfig() {
     scale against
 */
 /**********************************************************************/
-// void calibrateScale(int calibrationWeight) {
-//   // Impossible to calibrate against negative or no weight
-//   // reset the device after displaying warning.
-//   if (calibrationWeight <= 0) {
-    
-//     Serial.println("Cal Failed");
-//     Serial.println("Weight\nUnKnown\n");
-    
-//     scale_data.calFlag = false;
-//     countDown(4000);
-//     ESP.reset();
-//     return;
-//   }
+void calibrateScale(int calibrationWeight) {
+  // Impossible to calibrate against negative or no weight
+  // reset the device after displaying warning.
+  if (calibrationWeight <= 0) {
+    resetDisplay();
+    lcd.println("Cal Failed");
+    lcd.println("Weight\nUnKnown\n");
+    lcd.display();
+    scale_data.calFlag = false;
+    countDown(4000);
+    ESP.reset();
+    return;
+  }
 
-  
-//   // lcd.print("Calibrating");
-  
-//   countDown(2000);
-//   scale.set_scale();
-//   scale.tare();
-  
-//   Serial.printf("Place %dg\nOn Scale", calibrationWeight);
-  
-//   countDown(5000);
-//   scale_data.calibration = scale.get_units(2) / calibrationWeight;
-  
-//   Serial.println("cal weight");
-//   Serial.printf("%f\n", scale_data.calibration);
-  
-//   countDown(2000);
-//   scale.set_scale(scale_data.calibration);
-//   // save the new calibration data, then reset device
-//   scale_data.saveFlag = true;
-//   scale_data.calFlag = false;
-// }
+  resetDisplay();
+  lcd.print("Calibrating");
+  lcd.display();
+  countDown(2000);
+  scale.set_scale();
+  scale.tare();
+  resetDisplay();
+  lcd.printf("Place %dg\nOn Scale", calibrationWeight);
+  lcd.display();
+  countDown(5000);
+  scale_data.calibration = scale.get_units(2) / calibrationWeight;
+  resetDisplay();
+  lcd.println("cal weight");
+  lcd.printf("%f\n", scale_data.calibration);
+  lcd.display();
+  countDown(2000);
+  scale.set_scale(scale_data.calibration);
+  // save the new calibration data, then reset device
+  scale_data.saveFlag = true;
+  scale_data.calFlag = false;
+}
 
 
 /**********************************************************************/
@@ -417,14 +418,14 @@ void saveConfig() {
     from tare / empty spool weight.
 */
 /**********************************************************************/
-// void updateScale() {
-//   if (scale.is_ready()) {
-//     scale_data.weight = (scale.get_units(2));
-//     scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
-//     // scale_data.calibration = scale.get_scale();
-//     // scale_data.offset = scale.get_offset();
-//   }
-// }
+void updateScale() {
+  if (scale.is_ready()) {
+    scale_data.weight = (scale.get_units(2));
+    scale_data.filament_remaining = scale_data.weight - scale_data.spool_weight;
+    // scale_data.calibration = scale.get_scale();
+    // scale_data.offset = scale.get_offset();
+  }
+}
 
 
 /**********************************************************************/
@@ -444,7 +445,6 @@ Task sendEvents(0, 1250, &updateWeb);
 */
 /**********************************************************************/
 void startServer() {
-  Serial.println("Starting server");
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html");
   });
@@ -452,9 +452,9 @@ void startServer() {
   server.serveStatic("/", LittleFS, "/");
 
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
-    // scale.tare(2);
-    // scale_data.offset = scale.get_offset();
-    // scale_data.saveFlag = true;
+    scale.tare(2);
+    scale_data.offset = scale.get_offset();
+    scale_data.saveFlag = true;
     request->send(200);
   });
 
@@ -536,8 +536,6 @@ void startServer() {
   });
 
   server.begin();
-  Serial.println("Server Started");
-
 }
 
 
@@ -589,40 +587,40 @@ void updateWeb() {
 
 void startOTA() {
   ArduinoOTA.onStart([]() {
-    
-    Serial.println("Starting Update");
-    
+    resetDisplay();
+    lcd.println("Starting Update");
+    lcd.display();
   });
   ArduinoOTA.onEnd([]() {
-    
-    Serial.println("Success");
-    
+    resetDisplay();
+    lcd.println("Success");
+    lcd.display();
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    
-    // char progressPercent[16];
-    // sprintf(progressPercent,"%u%%",(progress / (total / 100)));
-    // Serial.println("Updating");
-    // lcd.setCursor(0, 16);
-    // lcd.print("Progress:");
-    // lcd.setCursor(0,48);
-    // justifyRight(progressPercent);
-    
+    resetDisplay();
+    char progressPercent[16];
+    sprintf(progressPercent,"%u%%",(progress / (total / 100)));
+    lcd.println("Updating");
+    lcd.setCursor(0, 16);
+    lcd.print("Progress:");
+    lcd.setCursor(0,48);
+    justifyRight(progressPercent);
+    lcd.display();
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    
-    Serial.printf("Error[%u]: ", error);
+    resetDisplay();
+    lcd.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR)
-      Serial.println("Auth Failed");
+      lcd.println("Auth Failed");
     else if (error == OTA_BEGIN_ERROR)
-      Serial.println("Begin Failed");
+      lcd.println("Begin Failed");
     else if (error == OTA_CONNECT_ERROR)
-      Serial.println("Connect Failed");
+      lcd.println("Connect Failed");
     else if (error == OTA_RECEIVE_ERROR)
-      Serial.println("Receive Failed");
+      lcd.println("Receive Failed");
     else if (error == OTA_END_ERROR)
-      Serial.println("End Failed");
-    
+      lcd.println("End Failed");
+    lcd.display();
   });
   ArduinoOTA.begin();
 }
@@ -633,34 +631,34 @@ void setupWiFi() {
   WiFi.mode(WIFI_STA);
 
   // check whether WiFi connection can be established
-  // 
+  resetDisplay();
 
-  Serial.printf("Trying\nSSID:\n%s", WiFi.SSID().c_str());
-  // 
+  lcd.printf("Trying\nSSID:\n%s", WiFi.SSID().c_str());
+  lcd.display();
   WiFi.begin();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if (retry++ >= 40) {
-      // 
-      Serial.printf("WiFi\ntimeout\n");
-      // 
+      resetDisplay();
+      lcd.printf("WiFi\ntimeout\n");
+      lcd.display();
       delay(250);
       WiFi.beginSmartConfig();
       // forever loop: exit only when SmartConfig packets have been received
       while (true) {
         delay(500);
-        
-        
-        Serial.println("Waiting...\n\n");
-        Serial.println("Use Smartconfig");
-        Serial.println("app to setup");
-        Serial.println("WiFi");
-        
-        
+        resetDisplay();
+        lcd.setTextSize(1);
+        lcd.println("Waiting...\n\n");
+        lcd.println("Use Smartconfig");
+        lcd.println("app to setup");
+        lcd.println("WiFi");
+        lcd.display();
+        lcd.setTextSize(2);
         if (WiFi.smartConfigDone()) {
-          
-          Serial.printf("WiFi\nConfig\nSuccess");
-          
+          resetDisplay();
+          lcd.printf("WiFi\nConfig\nSuccess");
+          lcd.display();
           config_done = 1;
           break; // exit from loop
         }
@@ -674,45 +672,20 @@ void setupWiFi() {
   }
 }
 
-void listAllFilesInDir(String dir_path)
-{
-  Serial.println("\nListing");
-	Dir dir = LittleFS.openDir(dir_path);
-	while(dir.next()) {
-		if (dir.isFile()) {
-			// print file names
-			Serial.print("File: ");
-			Serial.println(dir_path + dir.fileName());
-		}
-		if (dir.isDirectory()) {
-			// print directory names
-			Serial.print("Dir: ");
-			Serial.println(dir_path + dir.fileName() + "/");
-			// recursive file listing inside new directory
-			listAllFilesInDir(dir_path + dir.fileName() + "/");
-		}
-	}
-}
+
 /**
  * @brief Runs once before loop, then passes to control to loop()
  * 
  */
 void setup() {
-  Serial.begin(9600);
-
-  if(LittleFS.begin()) {
-    // listAllFilesInDir("/");
-  } else {
-    Serial.println("littlefs failed!");
-  }
-  // Wire.begin(SDA, SCL); // start i2c interface
-  // initDisplay();
+  LittleFS.begin();
+  Wire.begin(SDA, SCL); // start i2c interface
+  initDisplay();
   setupWiFi();
-  Serial.print("IP:");
-  Serial.println(WiFi.localIP());
   startOTA();
   startServer();
-  // scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  loadConfig();
 }
 
 
@@ -727,23 +700,23 @@ void loop() {
     sendEvents.run();
   }
 
-  // if(scale_data.saveFlag){
-  //   server.end();
-  //   saveConfig();
-  // }
+  if(scale_data.saveFlag){
+    server.end();
+    saveConfig();
+  }
 
-  // if (scale_data.calFlag) {
-  //   server.end();
-  //   calibrateScale(scale_data.knownWeight);
-  // }
+  if (scale_data.calFlag) {
+    server.end();
+    calibrateScale(scale_data.knownWeight);
+  }
 
-  // if (getScaleData.isReady()) {
-  //   getScaleData.run();
-  // }
+  if (getScaleData.isReady()) {
+    getScaleData.run();
+  }
 
-  // if (updatedisplay.isReady()) {
-    // updatedisplay.run();
-  // }
+  if (updatedisplay.isReady()) {
+    updatedisplay.run();
+  }
 
   yield();
 }
