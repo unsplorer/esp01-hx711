@@ -1,78 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <title>Solid App</title>
+    <script src="//cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/radial/gauge.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script type="module" crossorigin src="/assets/index-7e495325.js"></script>
+    <link rel="stylesheet" href="/assets/index-82af193d.css">
+  </head>
+  <body>
+    
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
 
-<head>
-  <title>Filament Scale Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- bootstrap start -->
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
-  <!-- MDB -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.css" rel="stylesheet" />
-  <!-- bootstrap end -->
-  <link rel="icon" type="image/png " href=" favicon.png" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <link rel="stylesheet" type="text/css" href="script.css" />
-  <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
-  <!-- MDB -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.1.0/mdb.min.js"></script>
-</head>
-
-<body>
-  <!-- TOP NAV -->
-  <nav class="navbar navbar-dark bg-dark">
-    <div class="bg-dark container-fluid">
-      <div class="navbar-text fs-4 text-light">
-        Ender 3 Filament Dashboard
-      </div>
-    </div>
-  </nav>
-  <!-- MAIN CONTENT -->
-  <div class="card-grid mt-5">
-    <div class="card card-body flex mx-auto bg-white py-3 justify-content-center">
-      <canvas id="gauge-filament"></canvas>
-
-      <div class="bg-white d-flex mt-n3 justify-content-between">
-        <i class="dropdown-toggle fa-solid fa-1x fa-tools" type="button" id="dropdownMenuButton" data-mdb-toggle="dropdown" aria-expanded="false">
-          
-        </i>
-        <div class="dropdown">
-        
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <form class="form row-cols-1" action="/spool" method="post">
-              <input type="number" class="text-center rounded" name="spool" id="spool" placeholder="Empty Spool Weight">
-              <button type="submit" class="btn btn-success mb-1" value="submit" aria-placeholder="Empty">Set Empty Weight</button>
-            </form>
-            <form class="form row-cols-1" action="/calibrate" method="post">
-              <input type="number" class="text-center rounded" name="known_weight" id="known_weight" placeholder="Known Weight eg.. 100g">
-              <button type="submit" class="btn btn-danger" value="submit">Calibrate</button>
-              <btn class="btn btn-primary mt-2" onclick="tareScale()">Tare</btn>
-            </form>
-            
-            <form class="form row-cols-1" action="/api" method="post">
-              <span class="text-center">Restore Settings</span>
-              <input type="number" class="text-center rounded" name="offset" id="offset" placeholder="Tare offset">
-              <input type="number" step="0.01" class="text-center rounded" name="calvalue" id="calvalue" placeholder="Calibration value">
-              <input type="number" class="text-center rounded" name="spool_weight" id="spool_weight" placeholder="Empty Spool Weight">
-              <button type="submit" class="btn btn-danger" value="submit">Submit</button>
-            </form>
-          </div>
-
-        </div>
-          <!-- settings button end -->
-            <i class="fa-solid fa-wifi" id="wifi_signal"></i>
-      </div>
-    </div>
-  </div>
-  <!-- SCRIPTS -->
-  <script src="script.js"></script>
-</body>
+    
+  </body>
 </html>
-<!-- call values -->
-  <!-- calibration_value: 450.84
-  offset: 67912
-  raw_weight: 1202.7
-  reading: 913.7
-  spool_weight: 289 -->

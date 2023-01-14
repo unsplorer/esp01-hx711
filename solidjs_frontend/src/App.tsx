@@ -1,15 +1,13 @@
 import type { Component } from 'solid-js';
 import Card from './Components/Card';
 import Navbar from './Components/Navbar';
+
 import { createSignal, onCleanup } from "solid-js";
 
 const App: Component = () => {
   const [count, setCount] = createSignal(0);
-	const interval = setInterval(
-		() => setCount(c => c + 10),
-		1000
-	);
-	onCleanup(() => clearInterval(interval));
+  const [rssi, setRssi] = createSignal(0);
+
   // event listener
   if (!!window.EventSource) {
     var source = new EventSource('/events');
@@ -30,6 +28,7 @@ const App: Component = () => {
     source.addEventListener('report', function(e) {
       let report = JSON.parse(e.data);
       setCount(report["scale"].filament_remaining);
+      setRssi(report["device"].rssi);
     }, false);
   }
   
@@ -37,7 +36,8 @@ const App: Component = () => {
     <main>
       <Navbar/>
       <div class='mt-6 flex items-center text-center justify-center'>
-        <Card title='Filament Remaining' filament={count()}/>
+        <Card title='Filament Remaining' filament={count()} rssi={rssi()}/>
+
       </div>
     </main>
   )
