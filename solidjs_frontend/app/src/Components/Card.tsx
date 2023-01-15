@@ -11,7 +11,7 @@ const Card = (props) => {
   </span>;
 
   return (
-    <div class="rounded-3xl items-center shadow-2xl px-12 py-6 flex-col">
+    <div class="dark:bg-zinc-800 dark:text-white rounded-3xl items-center shadow-2xl px-12 py-6 flex-col">
       {cardHeader}
       <Fila_Gauge value={props.filament} class="flex"/>
       {cardFooter}

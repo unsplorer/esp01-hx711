@@ -35,7 +35,7 @@ const App: Component = () => {
   return (
     <main>
       <Navbar/>
-      <div class='mt-6 flex items-center text-center justify-center'>
+      <div class='dark:bg-zinc-800 mt-6 flex items-center text-center justify-center'>
         <Card title='Filament Remaining' filament={count()} rssi={rssi()} />
       </div>
     </main>

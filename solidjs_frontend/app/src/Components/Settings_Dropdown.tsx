@@ -27,7 +27,7 @@ const Settings_Dropdown = () => {
       xhr.send();
     }
   return (
-    <div class="dropdown bg-white">
+    <div class="dropdown dark:bg-zinc-800  bg-white">
       <button onclick={handler} type="button" data-mdb-ripple="true" data-mdb-ripple-color="light" class="dropbtn inline-block px-4 py-2 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded-full shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out">
         <i class="fa-solid fa-1x fa-tools -mx-3 "></i>
       </button>
