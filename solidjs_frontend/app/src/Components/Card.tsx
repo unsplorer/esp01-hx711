@@ -6,7 +6,7 @@ const Card = (props) => {
 
 
   return (
-    <div class="rounded-3xl shadow-2xl px-12 py-6 flex-col">
+    <div class="rounded-3xl items-center shadow-2xl px-12 py-6 flex-col">
         <h1 class="font-bold text-xl mb-2" id={props.id}>{props.title}</h1>
         <Fila_Gauge value={props.filament} class="flex"/>
         <span class="flex justify-between items-center -mt-8 -mx-6 py-1">
