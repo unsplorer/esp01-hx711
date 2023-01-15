@@ -36,8 +36,7 @@ const App: Component = () => {
     <main>
       <Navbar/>
       <div class='mt-6 flex items-center text-center justify-center'>
-        <Card title='Filament Remaining' filament={count()} rssi={rssi()}/>
-
+        <Card title='Filament Remaining' filament={count()} rssi={rssi()} />
       </div>
     </main>
   )
