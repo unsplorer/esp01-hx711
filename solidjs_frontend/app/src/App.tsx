@@ -1,15 +1,15 @@
 import type { Component } from 'solid-js';
 import Card from './Components/Card';
 import Navbar from './Components/Navbar';
-import Navitem from "./Components/Navitem";
-import { createSignal, onCleanup, createEffect } from "solid-js";
+import { createSignal} from "solid-js";
+
 
 const App: Component = () => {
   const [count, setCount] = createSignal(0);
   const [rssi, setRssi] = createSignal();
   const [darkmode, setDarkmode] = createSignal('Dark');
 
-  function toggleDark() {
+  const toggleDark = () => {
     let root = document.getElementById('html');
     if (root.classList.contains('dark')) {
       root.classList.remove('dark');
@@ -41,7 +41,7 @@ const App: Component = () => {
 
   return (
     <main>
-      <Navbar toggledark={toggleDark}/>
+      <Navbar toggleDark={toggleDark}/>
       <div class='dark:bg-zinc-800 dark:text-zinc-300 mt-6 flex items-center text-center justify-center'>
         <Card title='Filament Remaining' filament={count()} rssi={rssi()} darkMode={darkmode} />
       </div>

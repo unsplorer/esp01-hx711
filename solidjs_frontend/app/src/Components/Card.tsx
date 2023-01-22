@@ -12,9 +12,9 @@ const Card = (props) => {
 
   
   return (
-    <div  class="dark:text-inherit rounded-3xl items-center shadow-2xl px-12 py-6 flex-col">
+    <div class="dark:text-inherit rounded-3xl shadow-2xl py-0 px-0 md:px-12 md:py-6">
       {cardHeader}
-      <Fila_Gauge value={props.filament} darkMode={props.darkMode} class="flex"/>
+      <Fila_Gauge value={props.filament} darkMode={props.darkMode}/>
       {cardFooter}
     </div>
   );

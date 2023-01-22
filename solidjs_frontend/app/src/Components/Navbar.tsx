@@ -1,6 +1,8 @@
 import {Component} from "solid-js";
 import Navitem from "./Navitem";
 
+
+
 const Navbar: Component = (props) => {  
   let settings = <Navitem name="" class="button h-12 w-12 bg-zinc-700 text-white rounded-lg text-base font-medium"/>
   let navTitle = <h1 class='text-2xl ml-6'>Fila-Scale</h1>
@@ -13,7 +15,7 @@ const Navbar: Component = (props) => {
         {logo}
         {navTitle}
       </div>
-      <div class='mr-6' onclick={props.toggledark}>
+      <div class='mr-6' onclick={props.toggleDark}>
         {settings}
       </div>
     </nav>

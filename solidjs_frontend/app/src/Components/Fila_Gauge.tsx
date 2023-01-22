@@ -7,13 +7,11 @@ const Fila_Gauge = (props) => {
     let colorMinorTicks = "#EEE";
     let colorUnits = "#DDD";
     let width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    width = (width < 400) ? 300 : width *.3
+    width = (width < 400) ? 275 : width *.4
     let height = width;
     createEffect(() => {
         let gauge = document.getElementById("gauge");
-        console.log(gauge);
         if (props.darkMode() == "Dark") {
-            console.log(`switching to ${props.darkMode()}`);
             colorPlate = "#222"
             textColor = "#FFF";
             colorMajorTicks = "#AAA";
@@ -36,7 +34,7 @@ const Fila_Gauge = (props) => {
         
     });
     return (
-    <canvas id="gauge" data-type="radial-gauge"
+    <canvas class="inline-flex" id="gauge" data-type="radial-gauge"
         data-width={width}
         data-height={height}
         data-units="grams"
