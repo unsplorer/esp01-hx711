@@ -34,8 +34,8 @@ const Fila_Gauge = (props) => {
     });
     return (
     <canvas id="gauge" data-type="radial-gauge"
-        data-width="300"
-        data-height="300"
+        data-width="400"
+        data-height="400"
         data-units="grams"
         data-title=""
         data-value={props.value}

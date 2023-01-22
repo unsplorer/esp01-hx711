@@ -43,7 +43,7 @@ const App: Component = () => {
     <main>
       <Navbar toggledark={toggleDark}/>
       <div class='dark:bg-zinc-800 dark:text-zinc-300 mt-6 flex items-center text-center justify-center'>
-        <Card title='Filament Remaining' filament={count()} rssi={rssi()} darkMode={darkmode}/>
+        <Card title='Filament Remaining' filament={count()} rssi={rssi()} darkMode={darkmode} />
       </div>
     </main>
   )
