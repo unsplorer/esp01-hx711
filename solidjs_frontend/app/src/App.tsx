@@ -1,12 +1,24 @@
 import type { Component } from 'solid-js';
 import Card from './Components/Card';
 import Navbar from './Components/Navbar';
-
-import { createSignal, onCleanup } from "solid-js";
+import Navitem from "./Components/Navitem";
+import { createSignal, onCleanup, createEffect } from "solid-js";
 
 const App: Component = () => {
   const [count, setCount] = createSignal(0);
   const [rssi, setRssi] = createSignal();
+  const [darkmode, setDarkmode] = createSignal('Dark');
+
+  function toggleDark() {
+    let root = document.getElementById('html');
+    if (root.classList.contains('dark')) {
+      root.classList.remove('dark');
+      setDarkmode("Light");
+    } else {
+      root.classList.add('dark');
+      setDarkmode("Dark");
+    }
+  }
 
   // event listener
   if (!!window.EventSource) {
@@ -16,12 +28,6 @@ const App: Component = () => {
       console.log("Events Connected");
     }, false);
 
-    // source.addEventListener('error', function(e) {
-    //   if (e.target.readyState != EventSource.OPEN) {
-    //     console.log("Events Disconnected");
-    //   }
-    // }, false);
-    
     source.addEventListener('message', function(e) {
     }, false);
     
@@ -32,11 +38,12 @@ const App: Component = () => {
     }, false);
   }
   
+
   return (
     <main>
-      <Navbar/>
-      <div class='dark:bg-zinc-800 mt-6 flex items-center text-center justify-center'>
-        <Card title='Filament Remaining' filament={count()} rssi={rssi()} />
+      <Navbar toggledark={toggleDark}/>
+      <div class='dark:bg-zinc-800 dark:text-zinc-300 mt-6 flex items-center text-center justify-center'>
+        <Card title='Filament Remaining' filament={count()} rssi={rssi()} darkMode={darkmode}/>
       </div>
     </main>
   )

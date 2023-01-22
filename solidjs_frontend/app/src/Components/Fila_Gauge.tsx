@@ -1,6 +1,39 @@
+import { createEffect } from "solid-js";
+
 const Fila_Gauge = (props) => {
-return (
- <canvas data-type="radial-gauge"
+    let colorPlate = "#222"
+    let textColor = "#EEE";
+    let colorMajorTicks = "#DDD";
+    let colorMinorTicks = "#EEE";
+    let colorUnits = "#DDD";
+    createEffect(() => {
+        let gauge = document.getElementById("gauge");
+        console.log(gauge);
+        if (props.darkMode() == "Dark") {
+            console.log(`switching to ${props.darkMode()}`);
+            colorPlate = "#222"
+            textColor = "#FFF";
+            colorMajorTicks = "#AAA";
+            colorMinorTicks = "#AAA";
+            colorUnits = "#CCC";
+
+        } else {
+            colorPlate = "#FFF";
+            textColor = "#555";
+            colorMajorTicks = "#333"
+            colorMinorTicks = "#222";
+            colorUnits = "#333";
+        }
+        gauge.setAttribute('data-color-plate', colorPlate);
+        gauge.setAttribute('data-color-major-ticks', colorMajorTicks);
+        gauge.setAttribute('data-color-minor-ticks', colorMinorTicks);
+        gauge.setAttribute('data-color-numbers', textColor);
+        gauge.setAttribute('data-color-units', colorUnits);
+
+        
+    });
+    return (
+    <canvas id="gauge" data-type="radial-gauge"
         data-width="300"
         data-height="300"
         data-units="grams"
@@ -12,22 +45,22 @@ return (
         data-minor-ticks="4"
         data-stroke-ticks="true"
         data-highlights='[
-            {
-                "from": 0,
-                "to": 100,
-                "color": "#FF0000"
+        {
+            "from": 0,
+            "to": 100,
+            "color": "#FF0000"
             }
         ]'
         data-value-text-shadow="false"
         data-color-value-box-shadow="false"
         data-color-value-box-background="false"
         data-value-box-stroke="0"
-        data-color-plate="#fff"
-        data-color-major-ticks="#333"
-        data-color-minor-ticks="#222"
+        data-color-plate={colorPlate}
+        data-color-major-ticks={colorMajorTicks}
+        data-color-minor-ticks={colorMinorTicks}
         data-color-title="#444"
-        data-color-units="#333"
-        data-color-numbers="555"
+        data-color-units={colorUnits}
+        data-color-numbers={textColor}
         data-color-needle-start="#000"
         data-color-needle-end="#00f9"
         data-color-needle-shadow-down="#222"
@@ -42,8 +75,9 @@ return (
         data-animation-duration="500"
         data-font-value="Led"
         data-animated-value="true"
-></canvas>
- );}
+    ></canvas>
+    );
+}
 
 
 export default Fila_Gauge;
