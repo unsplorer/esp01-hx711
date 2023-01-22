@@ -7,7 +7,7 @@ const Fila_Gauge = (props) => {
     let colorMinorTicks = "#EEE";
     let colorUnits = "#DDD";
     let width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    width = (width < 400) ? 275 : width *.4
+    width = (width < 400) ? 300 : width *.75
     let height = width;
     createEffect(() => {
         let gauge = document.getElementById("gauge");
