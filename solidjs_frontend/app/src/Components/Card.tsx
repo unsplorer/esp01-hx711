@@ -5,7 +5,7 @@ import Settings_Dropdown from "./Settings_Dropdown";
 const Card = (props) => {
   const cardHeader = <h1 class="dark:text-inherit  font-bold text-xl mb-2" id={props.id}>{props.title}</h1>;
   const cardFooter = 
-  <span class="flex justify-between items-center -mt-8 -mx-6 py-1">
+  <span class="flex justify-between items-center -mt-8 -mx-6 pt-8">
     <Settings_Dropdown />
     <WiFiSignal rssi={props.rssi} />
   </span>;
