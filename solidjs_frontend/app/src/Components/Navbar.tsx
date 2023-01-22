@@ -8,7 +8,7 @@ const Navbar: Component = (props) => {
   
   
   return (
-    <nav class="bg-zinc-800 dark:bg-zinc-900  text-white flex items-center justify-between">
+    <nav class="bg-zinc-800 dark:bg-zinc-900 w-full text-white flex items-center justify-between">
       <div class='flex items-center'>
         {logo}
         {navTitle}
