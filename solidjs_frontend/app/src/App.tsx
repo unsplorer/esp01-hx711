@@ -23,14 +23,11 @@ const App: Component = () => {
   // event listener
   if (!!window.EventSource) {
     var source = new EventSource('/events');
-    
     source.addEventListener('open', function(e) {
       console.log("Events Connected");
     }, false);
-
     source.addEventListener('message', function(e) {
     }, false);
-    
     source.addEventListener('report', function(e) {
       let report = JSON.parse(e.data);
       setCount(report["scale"].filament_remaining);
@@ -38,7 +35,6 @@ const App: Component = () => {
     }, false);
   }
   
-
   return (
     <main>
       <Navbar toggleDark={toggleDark}/>
