@@ -32,7 +32,7 @@ const Settings_Dropdown = () => {
         <i class="fa-solid fa-1x fa-tools -mx-3 "></i>
       </button>
       {/* dropdown content */}
-      <div id="myDropdown" class="mx-5 dropdown-content rounded bg-white">
+      <div id="myDropdown" class="absolute bottom-12 transform transform-origin-top-right mx-5 dropdown-content rounded bg-white border-2 border-black">
         <form class="form text-center bg-white my-3" action="/spool" method="post">
           <input type="number" class="text-center border-b-2 border-gray-300" name="spool" id="spool" placeholder="Empty Spool Weight"></input>
           <button type="submit" class="w-full py-2.5 bg-green-500 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-green-600 hover:shadow-lg focus:bg-green-600 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-green-700 active:shadow-lg transition duration-150 ease-in-out" value="submit" aria-placeholder="Empty">Set</button>
