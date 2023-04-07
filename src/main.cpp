@@ -40,6 +40,7 @@ void setup();
 void updateWeb();
 void updateDisplay();
 void justifyRight(const char *text);
+double round2(double value);
 
 // Used to hold all data pertaining to scale
 typedef struct scaleData {
@@ -136,21 +137,20 @@ const unsigned char splash_logo [] PROGMEM = {
 };
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c26b345 (add logo array, testing)
-class Task {
-private:
-  unsigned long lastRun;
-  unsigned int interval;
-  void (*_actualTask_)();
-
-public:
-  Task(unsigned long lastRun, unsigned int interval, void(func)()) {
-    this->lastRun = lastRun;
-    this->interval = interval;
-    this->_actualTask_ = func;
+/**********************************************************************/
+/*!
+  @brief  Initializes the display and shows splash screen.
+*/
+/**********************************************************************/
+void initDisplay() {
+  if (lcd.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    resetDisplay();
+    lcd.setTextSize(2);
+    lcd.setTextColor(SSD1306_WHITE);
+    lcd.cp437(true);
+    lcd.drawBitmap(0,0,splash_logo,128,64,WHITE);
+    lcd.display();
+    delay(2000);
   }
 }
 
@@ -451,14 +451,6 @@ void startServer() {
 
   server.serveStatic("/", LittleFS, "/");
 
-  server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request) {
-    StaticJsonDocument<64> doc;
-    doc["reading"] = scale_data.filament_remaining;
-    String json;
-    serializeJson(doc, json);
-    request->send(200, "application/json", json);
-  });
-
   server.on("/tare", HTTP_POST, [](AsyncWebServerRequest *request) {
     scale.tare(2);
     scale_data.offset = scale.get_offset();
@@ -488,6 +480,25 @@ void startServer() {
     } else {
       request->send(500);
     }
+  });
+
+  server.on("/api", HTTP_GET, [](AsyncWebServerRequest *request) {
+    StaticJsonDocument<512> doc;
+    JsonObject device = doc.createNestedObject("device");
+    JsonObject scale = doc.createNestedObject("scale");
+
+    device["ssid"] = WiFi.SSID();
+    device["rssi"] = WiFi.RSSI();
+    device["uptime"] = millis();
+
+    scale["filament_remaining"] = round2(scale_data.filament_remaining);
+    scale["spool_weight"] = round2(scale_data.spool_weight);
+    scale["calibration_value"] = round2(scale_data.calibration);
+    scale["offset"] = scale_data.offset;
+
+    String json;
+    serializeJson(doc, json);
+    request->send(200, "application/json", json);
   });
 
   server.on("/api", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -545,15 +556,24 @@ double round2(double value) {
 */
 /**********************************************************************/
 void updateWeb() {
-  StaticJsonDocument<96> doc;
-  doc["reading"] = round2(scale_data.filament_remaining);
-  doc["raw_weight"] = round2(scale_data.weight);
-  doc["spool_weight"] = round2(scale_data.spool_weight);
-  doc["calibration_value"] = round2(scale_data.calibration);
-  doc["offset"] = scale_data.offset;
-  String json;
-  serializeJson(doc, json);
-  events.send(json.c_str(), "new_readings", millis());
+  StaticJsonDocument<512> doc;
+  JsonObject device = doc.createNestedObject("device");
+  JsonObject scale = doc.createNestedObject("scale");
+
+  device["ssid"] = WiFi.SSID();
+  device["rssi"] = WiFi.RSSI();
+  device["uptime"] = millis();
+
+  scale["filament_remaining"] = round2(scale_data.filament_remaining);
+  scale["spool_weight"] = round2(scale_data.spool_weight);
+  scale["calibration_value"] = round2(scale_data.calibration);
+  scale["offset"] = scale_data.offset;
+
+  char buffer[512];
+  serializeJson(doc,buffer);
+  // String json;
+  // serializeJson(doc, json);
+  events.send(buffer, "report", millis());
 }
 
 
@@ -567,8 +587,6 @@ void updateWeb() {
 
 void startOTA() {
   ArduinoOTA.onStart([]() {
-    // events.close();
-    // server.end();
     resetDisplay();
     lcd.println("Starting Update");
     lcd.display();
