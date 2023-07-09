@@ -8,6 +8,4 @@ services:
       # - ./src:/app/src:rw
       # - ./public:/app/public:rws
       # - ./data:/app/dist:rw
-    # command: npm install -g solid-js babel-preset-solid && npx degit solidjs/templates/ts-tailwindcss 
-    command: "npm run dev --host"
     network_mode: "host"
