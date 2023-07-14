@@ -2,10 +2,12 @@ version: '3'
 services:
   frontend:
     container_name: "hx711_frontend"
-    build: ./
+    working_dir: "/app"
+    image: node:latest
     volumes:
       - ./app:/app:rw
       # - ./src:/app/src:rw
       # - ./public:/app/public:rws
       # - ./data:/app/dist:rw
     network_mode: "host"
+    entrypoint: "/app/entrypoint.sh"
